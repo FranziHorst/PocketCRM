@@ -3,7 +3,7 @@ import AsyncStorage from '@react-native-async-storage/async-storage';
 import { router } from 'expo-router';
 import { UserProfile, Contact, DailyTask, AppNotification } from '../types';
 import { initialUserProfile, initialContacts, initialDailyTasks, initialNotifications } from '../mockData';
-import { calculateNextReminder, getReminderInfo } from '../crmHelpers';
+import { calculateNextReminder } from '../crmHelpers';
 
 const KEYS = {
   profile: 'pocket_crm_user_profile',
@@ -18,7 +18,7 @@ type Store = {
   contacts: Contact[];
   tasks: DailyTask[];
   notifications: AppNotification[];
-  overdueCount: number;
+  pendingCount: number;
   unreadCount: number;
 
   toggleTask: (taskId: string) => void;
@@ -27,7 +27,6 @@ type Store = {
   deleteContact: (contactId: string) => void;
   logTouchpoint: (contactId: string) => void;
   dismissNotification: (id: string) => void;
-  clearAllNotifications: () => void;
   updateProfile: (profile: UserProfile) => void;
   resetDemoData: () => void;
 
@@ -39,8 +38,6 @@ type Store = {
   setAddTaskOpen: (open: boolean) => void;
   isAccountOpen: boolean;
   setAccountOpen: (open: boolean) => void;
-  isNotificationsOpen: boolean;
-  setNotificationsOpen: (open: boolean) => void;
 
   chatPrefilledPrompt: string;
   clearPrefilledPrompt: () => void;
@@ -60,7 +57,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isAccountOpen, setAccountOpen] = useState(false);
-  const [isNotificationsOpen, setNotificationsOpen] = useState(false);
   const [chatPrefilledPrompt, setChatPrefilledPrompt] = useState('');
 
   useEffect(() => {
@@ -90,14 +86,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     AsyncStorage.setItem(KEYS.notifications, JSON.stringify(notifications));
   }, [ready, userProfile, contacts, tasks, notifications]);
 
-  const overdueCount = useMemo(
-    () =>
-      contacts.filter((ct) => {
-        const s = getReminderInfo(ct).status;
-        return s === 'overdue' || s === 'today';
-      }).length,
-    [contacts]
-  );
+  const pendingCount = useMemo(() => tasks.filter((t) => !t.completed).length, [tasks]);
   const unreadCount = useMemo(() => notifications.filter((n) => !n.read).length, [notifications]);
 
   const toggleTask = (taskId: string) =>
@@ -132,7 +121,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   };
 
   const dismissNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
-  const clearAllNotifications = () => setNotifications([]);
   const updateProfile = (profile: UserProfile) => setUserProfile(profile);
 
   const resetDemoData = () => {
@@ -172,12 +160,11 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const clearPrefilledPrompt = () => setChatPrefilledPrompt('');
 
   const value: Store = {
-    ready, userProfile, contacts, tasks, notifications, overdueCount, unreadCount,
+    ready, userProfile, contacts, tasks, notifications, pendingCount, unreadCount,
     toggleTask, addTask, saveContact, deleteContact, logTouchpoint,
-    dismissNotification, clearAllNotifications, updateProfile, resetDemoData,
+    dismissNotification, updateProfile, resetDemoData,
     selectedContact, openContact, openAddContact, closeContact,
     isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen,
-    isNotificationsOpen, setNotificationsOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
   };
 
