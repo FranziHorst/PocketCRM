@@ -1,39 +1,42 @@
-import { Tabs } from 'expo-router/tabs';
-import { Home, LayoutDashboard, Users, MessageCircle, User } from 'lucide-react-native';
+import { Tabs, useRouter } from 'expo-router';
+import { CalendarCheck, LayoutDashboard, MessageSquareCode, User, Users } from 'lucide-react-native';
+import { AppHeader } from '@/components/AppHeader';
+import { useCrm } from '@/store';
+import { c } from '@/theme';
 
-const PRIMARY = '#4F46E5';
+export const unstable_settings = { initialRouteName: 'dashboard' };
 
 export default function TabsLayout() {
+  const router = useRouter();
+  const { overdueCount } = useCrm();
+
   return (
     <Tabs
       screenOptions={{
-        headerStyle: { backgroundColor: PRIMARY },
-        headerTintColor: '#fff',
-        headerTitleStyle: { fontWeight: '600' },
-        tabBarActiveTintColor: PRIMARY,
-        tabBarInactiveTintColor: '#9CA3AF',
-      }}
-    >
+        header: () => <AppHeader />,
+        sceneStyle: { backgroundColor: c.slate50 },
+        tabBarActiveTintColor: c.indigo600,
+        tabBarInactiveTintColor: c.slate600,
+        tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
+        tabBarStyle: { backgroundColor: c.white, borderTopColor: c.slate200 },
+      }}>
       <Tabs.Screen
-        name="index"
-        options={{ title: 'Today', tabBarIcon: ({ color, size }) => <Home color={color} size={size} /> }}
+        name="today"
+        options={{ title: 'Today', tabBarIcon: ({ color, size }) => <CalendarCheck color={color} size={size} /> }}
+        listeners={{ tabPress: (e) => { e.preventDefault(); router.replace('/'); } }}
       />
-      <Tabs.Screen
-        name="dashboard"
-        options={{ title: 'Dashboard', tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} /> }}
-      />
+      <Tabs.Screen name="dashboard" options={{ title: 'Dashboard', tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} /> }} />
       <Tabs.Screen
         name="contacts"
-        options={{ title: 'Contacts', tabBarIcon: ({ color, size }) => <Users color={color} size={size} /> }}
+        options={{
+          title: 'Contacts',
+          tabBarIcon: ({ color, size }) => <Users color={color} size={size} />,
+          tabBarBadge: overdueCount > 0 ? overdueCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: c.rose500, color: c.white, fontSize: 10, fontWeight: '700' },
+        }}
       />
-      <Tabs.Screen
-        name="ai"
-        options={{ title: 'AI Copilot', tabBarLabel: 'AI', tabBarIcon: ({ color, size }) => <MessageCircle color={color} size={size} /> }}
-      />
-      <Tabs.Screen
-        name="profile"
-        options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }}
-      />
+      <Tabs.Screen name="aichat" options={{ title: 'AI Copilot', tabBarIcon: ({ color, size }) => <MessageSquareCode color={color} size={size} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }} />
     </Tabs>
   );
 }

@@ -1,14 +1,10 @@
-import DashboardScreen from '../../../screens/DashboardScreen';
-import { useCrm } from '@/store';
+import { ScrollView } from 'react-native';
+import { DashboardView } from '@/components/DashboardView';
 
 export default function Dashboard() {
-  const { userProfile, contacts, tasks, notifications } = useCrm();
   return (
-    <DashboardScreen
-      userProfile={userProfile}
-      contacts={contacts}
-      tasks={tasks}
-      notifications={notifications}
-    />
+    <ScrollView contentContainerStyle={{ padding: 16 }}>
+      <DashboardView />
+    </ScrollView>
   );
 }

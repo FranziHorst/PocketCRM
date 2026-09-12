@@ -1,4 +1,4 @@
-import { UserProfile, Contact, DailyTask, AppNotification } from "../types";
+import { UserProfile, Contact, DailyTask, AppNotification } from "./types";
 
 export const initialUserProfile: UserProfile = {
   id: "user_alex_31",

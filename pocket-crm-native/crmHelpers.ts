@@ -1,4 +1,4 @@
-import { Contact, ReminderCadence } from "../types";
+import { Contact, ReminderCadence } from "./types";
 
 export function getGreeting(name: string): { text: string; subtext: string; icon: string } {
   const hour = new Date().getHours();

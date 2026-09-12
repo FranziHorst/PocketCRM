@@ -1,7 +1,10 @@
-import ContactsScreen from '../../../screens/ContactsScreen';
-import { useCrm } from '@/store';
+import { ScrollView } from 'react-native';
+import { ContactsView } from '@/components/ContactsView';
 
 export default function Contacts() {
-  const { contacts } = useCrm();
-  return <ContactsScreen contacts={contacts} />;
+  return (
+    <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+      <ContactsView />
+    </ScrollView>
+  );
 }
