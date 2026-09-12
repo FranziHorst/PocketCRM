@@ -1,20 +1,11 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { Calendar, Check, Clock, MessageSquare, Sparkles, Tag, Trash2 } from 'lucide-react-native';
+import { Check, MessageSquare, Sparkles, Tag, Trash2 } from 'lucide-react-native';
 import { useCrm } from '../store';
-import { Contact, ReminderCadence, TagSuggestion } from '../../types';
-import { calculateNextReminder, getReminderInfo } from '../../crmHelpers';
+import { Contact, TagSuggestion } from '../../types';
 import { suggestTags } from '../ai';
-import { c, r, reminderColors } from '../theme';
-import { Avatar, Badge, Btn, Choice, Field, Input, Label, ModalShell, confirmAsync } from './ui';
-
-const CADENCES: { value: ReminderCadence; label: string }[] = [
-  { value: 'weekly', label: 'Weekly (7d)' },
-  { value: 'biweekly', label: 'Bi-weekly (14d)' },
-  { value: 'monthly', label: 'Monthly (30d)' },
-  { value: 'quarterly', label: 'Quarterly (90d)' },
-  { value: 'none', label: 'None' },
-];
+import { c, r } from '../theme';
+import { Avatar, Btn, Field, Input, ModalShell, confirmAsync } from './ui';
 
 export function ContactDetailModal() {
   const { selectedContact, closeContact } = useCrm();
@@ -29,7 +20,7 @@ function ModalShellWrapper({ contact, onClose }: { contact: Contact | null; onCl
 }
 
 function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => void }) {
-  const { saveContact, deleteContact, logTouchpoint, askAIForContact } = useCrm();
+  const { saveContact, deleteContact, askAIForContact } = useCrm();
   const [form, setForm] = useState<Contact>({ ...contact, socialLinks: { ...contact.socialLinks } });
   const [newTag, setNewTag] = useState('');
   const [suggesting, setSuggesting] = useState(false);
@@ -37,7 +28,6 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
   const [selected, setSelected] = useState<string[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const rem = getReminderInfo(form);
   const set = (patch: Partial<Contact>) => setForm((f) => ({ ...f, ...patch }));
   const setSocial = (key: keyof Contact['socialLinks'], v: string) => setForm((f) => ({ ...f, socialLinks: { ...f.socialLinks, [key]: v } }));
 
@@ -74,7 +64,7 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
       sheet
       onClose={onClose}
       title={form.name || 'New Contact'}
-      subtitle="Contact Details & Reminders"
+      subtitle="Contact Details"
       icon={
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Avatar name={form.name} color={form.avatarColor} size={36} />
@@ -92,33 +82,12 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
           </View>
         </>
       }>
-      <View style={{ backgroundColor: c.slate50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.slate200, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexWrap: 'wrap' }}>
-          <Clock size={16} color={c.indigo600} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: c.slate800 }}>Reminder:</Text>
-          <Badge label={rem.label} colors={reminderColors(rem.status, rem.daysDifference)} />
-        </View>
-        <Btn label="Contacted Today" variant="success" icon={<Check size={12} color={c.white} />} onPress={() => {
-          logTouchpoint(form.id);
-          set({ lastContacted: new Date().toISOString().split('T')[0], nextReminderDate: calculateNextReminder(form.reminderCadence) });
-        }} />
-      </View>
-
       <Field label="Full Name *" value={form.name} onChangeText={(v) => set({ name: v })} placeholder="e.g., Maya Lin" />
       <Field label="Job Title / Role" value={form.role} onChangeText={(v) => set({ role: v })} placeholder="e.g., VP of Product" />
       <Field label="Company / Organization" value={form.company} onChangeText={(v) => set({ company: v })} placeholder="e.g., Loomis AI" />
       <Field label="Email" value={form.email || ''} onChangeText={(v) => set({ email: v })} placeholder="maya@example.com" keyboardType="email-address" autoCapitalize="none" />
       <Field label="Phone Number" value={form.phone || ''} onChangeText={(v) => set({ phone: v })} placeholder="+1 (415) ..." keyboardType="phone-pad" />
       <Field label="Location" value={form.location || ''} onChangeText={(v) => set({ location: v })} placeholder="e.g., San Francisco, CA" />
-
-      <View style={{ backgroundColor: c.indigo50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.indigo100, marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <Calendar size={14} color={c.indigo600} />
-          <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>Reminder Schedule & Follow-up Cadence</Text>
-        </View>
-        <Choice label="Frequency" value={form.reminderCadence} options={CADENCES} onChange={(v) => set({ reminderCadence: v, nextReminderDate: calculateNextReminder(v) })} />
-        <Field label="Next Due Date (YYYY-MM-DD)" value={form.nextReminderDate || ''} onChangeText={(v) => set({ nextReminderDate: v })} placeholder="2026-09-30" autoCapitalize="none" />
-      </View>
 
       <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900, marginBottom: 8 }}>Connected Social Media Profiles</Text>
       <Field label="LinkedIn" value={form.socialLinks.linkedin || ''} onChangeText={(v) => setSocial('linkedin', v)} placeholder="https://linkedin.com/in/..." autoCapitalize="none" />

@@ -25,7 +25,6 @@ type Store = {
   addTask: (task: DailyTask) => void;
   saveContact: (contact: Contact) => void;
   deleteContact: (contactId: string) => void;
-  logTouchpoint: (contactId: string) => void;
   dismissNotification: (id: string) => void;
   updateProfile: (profile: UserProfile) => void;
   resetDemoData: () => void;
@@ -109,20 +108,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     if (selectedContact?.id === contactId) setSelectedContact(null);
   };
 
-  const logTouchpoint = (contactId: string) => {
-    const today = new Date().toISOString().split('T')[0];
-    setContacts((prev) =>
-      prev.map((ct) =>
-        ct.id === contactId
-          ? { ...ct, lastContacted: today, nextReminderDate: calculateNextReminder(ct.reminderCadence) }
-          : ct
-      )
-    );
-    setTasks((prev) =>
-      prev.map((t) => (t.contactId === contactId && t.type === 'follow-up' ? { ...t, completed: true } : t))
-    );
-  };
-
   const dismissNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
   const updateProfile = (profile: UserProfile) => setUserProfile(profile);
 
@@ -165,7 +150,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
 
   const value: Store = {
     ready, userProfile, contacts, tasks, notifications, pendingCount, unreadCount,
-    toggleTask, addTask, saveContact, deleteContact, logTouchpoint,
+    toggleTask, addTask, saveContact, deleteContact,
     dismissNotification, updateProfile, resetDemoData,
     selectedContact, openContact, openAddContact, closeContact,
     isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen, isScanOpen, setScanOpen,
