@@ -51,12 +51,11 @@ type Store = {
   updateProfile: (profile: UserProfile) => void;
   resetDemoData: () => void;
 
-  selectedContact: Contact | null;
-  openContact: (contact: Contact) => void;
+  newContact: Contact | null;
   openAddContact: (prefill?: Partial<Contact>) => void;
+  closeAddContact: () => void;
   isScanOpen: boolean;
   setScanOpen: (open: boolean) => void;
-  closeContact: () => void;
   isAddTaskOpen: boolean;
   setAddTaskOpen: (open: boolean) => void;
   isAccountOpen: boolean;
@@ -79,7 +78,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [events, setEvents] = useState<CrmEvent[]>(initialEvents);
   const [settings, setSettings] = useState<Settings>(defaultSettings);
 
-  const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
+  const [newContact, setNewContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isAccountOpen, setAccountOpen] = useState(false);
   const [isScanOpen, setScanOpen] = useState(false);
@@ -140,7 +139,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
 
   const deleteContact = (contactId: string) => {
     setContacts((prev) => prev.filter((ct) => ct.id !== contactId));
-    if (selectedContact?.id === contactId) setSelectedContact(null);
   };
 
   const dismissNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
@@ -154,10 +152,9 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     setEvents(initialEvents);
   };
 
-  const openContact = (contact: Contact) => setSelectedContact(contact);
-  const closeContact = () => setSelectedContact(null);
+  const closeAddContact = () => setNewContact(null);
   const openAddContact = (prefill: Partial<Contact> = {}) =>
-    setSelectedContact({
+    setNewContact({
       id: `c_${Date.now()}`,
       name: '',
       role: '',
@@ -177,7 +174,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
 
   const askAIWithPrompt = (prompt: string) => {
     setChatPrefilledPrompt(prompt);
-    setSelectedContact(null);
+    setNewContact(null);
     router.replace('/(tabs)/aichat');
   };
   const askAIForContact = (contact: Contact) =>
@@ -194,7 +191,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     setContactsGrouping: (g) => setSettings((x) => ({ ...x, contactsGrouping: g })),
     toggleTask, addTask, saveContact, deleteContact,
     dismissNotification, updateProfile, resetDemoData,
-    selectedContact, openContact, openAddContact, closeContact,
+    newContact, openAddContact, closeAddContact,
     isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen, isScanOpen, setScanOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
   };

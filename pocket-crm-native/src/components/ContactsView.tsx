@@ -1,6 +1,7 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, Text, TextInput, View } from 'react-native';
 import { Building2, CalendarDays, MapPin, Search, Sparkles, Star, Tag, User, Users, X } from 'lucide-react-native';
+import { useRouter } from 'expo-router';
 import { ContactsGrouping, useCrm } from '../store';
 import { Contact, CrmEvent } from '../../types';
 import { summarizeNotes } from '../ai';
@@ -64,7 +65,9 @@ function eventDateLabel(ev: CrmEvent): string {
 }
 
 export function ContactsView() {
-  const { contacts, events, openContact, contactsGrouping, setContactsGrouping } = useCrm();
+  const { contacts, events, contactsGrouping, setContactsGrouping } = useCrm();
+  const router = useRouter();
+  const openContact = (ct: Contact) => router.push(`/(tabs)/contacts/${ct.id}`);
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<Filter | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
