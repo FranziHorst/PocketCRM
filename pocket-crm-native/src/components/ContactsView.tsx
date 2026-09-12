@@ -68,6 +68,7 @@ export function ContactsView() {
   const [searchQuery, setSearchQuery] = useState('');
   const [filter, setFilter] = useState<Filter | null>(null);
   const [showSuggestions, setShowSuggestions] = useState(false);
+  const [favoritesOnly, setFavoritesOnly] = useState(false);
 
   const setTagFilter = (tag: string) => { setFilter({ kind: 'tag', value: tag, label: `#${tag}` }); setSearchQuery(''); setShowSuggestions(false); };
 
@@ -85,18 +86,18 @@ export function ContactsView() {
   }, [searchQuery, contacts, events]);
 
   const filtered = useMemo(() => contacts.filter((ct) => {
+    if (favoritesOnly && !ct.isFavorite) return false;
     if (filter?.kind === 'tag' && !ct.tags.includes(filter.value)) return false;
     if (filter?.kind === 'company' && ct.company !== filter.value) return false;
     if (filter?.kind === 'event' && ct.eventId !== filter.value) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return [ct.name, ct.company, ct.role, ct.notes, ct.howWeMet, ...ct.tags].some((v) => v.toLowerCase().includes(q));
-  }), [contacts, searchQuery, filter]);
+  }), [contacts, searchQuery, filter, favoritesOnly]);
 
-  const favorites = filtered.filter((ct) => ct.isFavorite);
-  const groups = useMemo(() => buildGroups(filtered.filter((ct) => !ct.isFavorite), contactsGrouping, events), [filtered, contactsGrouping, events]);
+  const groups = useMemo(() => buildGroups(filtered, contactsGrouping, events), [filtered, contactsGrouping, events]);
 
-  const resetFilters = () => { setSearchQuery(''); setFilter(null); setShowSuggestions(false); };
+  const resetFilters = () => { setSearchQuery(''); setFilter(null); setFavoritesOnly(false); setShowSuggestions(false); };
 
   const renderContact = (ct: Contact) => {
     const summary = summarizeNotes(ct.notes);
@@ -188,6 +189,9 @@ export function ContactsView() {
             style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 4, fontSize: 12, color: c.slate900 }}
           />
           {searchQuery ? <Pressable onPress={() => { setSearchQuery(''); setShowSuggestions(false); }} hitSlop={6}><X size={14} color={c.slate400} /></Pressable> : null}
+          <Pressable onPress={() => setFavoritesOnly(!favoritesOnly)} hitSlop={6} accessibilityLabel="Favorites only" style={{ padding: 4, borderRadius: r.md, backgroundColor: favoritesOnly ? c.amber50 : 'transparent' }}>
+            <Star size={16} color={c.amber500} fill={favoritesOnly ? c.amber500 : 'transparent'} />
+          </Pressable>
         </View>
 
         {showSuggestions && suggestions.length > 0 && (
@@ -231,21 +235,12 @@ export function ContactsView() {
 
       {filtered.length === 0 ? (
         <Card style={{ alignItems: 'center', padding: 28, gap: 6 }}>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: c.slate700 }}>No contacts match your filters</Text>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: c.slate700 }}>{favoritesOnly ? 'No favorites match' : 'No contacts match your filters'}</Text>
           <Text style={{ fontSize: 12, color: c.slate400 }}>Try clearing search terms or create a new contact.</Text>
           <Pressable onPress={resetFilters}><Text style={{ fontSize: 12, fontWeight: '600', color: c.indigo600, marginTop: 6 }}>Reset Filters</Text></Pressable>
         </Card>
       ) : (
         <View style={{ gap: 10 }}>
-          {favorites.length > 0 && (
-            <>
-              <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 6 }}>
-                <Star size={13} color={c.amber500} fill={c.amber500} />
-                <Text style={{ fontSize: 13, fontWeight: '700', color: c.slate900 }}>Favorites</Text>
-              </View>
-              {favorites.map(renderContact)}
-            </>
-          )}
           {groups.map((g) => (
             <React.Fragment key={g.key}>
               {renderHeader(g)}
