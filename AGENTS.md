@@ -23,17 +23,17 @@ Gemergte Branches werden automatisch gelöscht (GitHub-Einstellung). Lokal danac
 ### Aufbauende Branches („stacked“)
 
 Baut ein Feature auf einem Branch auf, der noch nicht in `main` ist, dann:
-- vom **Feature-Branch** abzweigen, nicht von `main` (z. B. `speak-to-ai` von `franzi/dashboard-rework`)
+- vom **Feature-Branch** abzweigen, nicht von `main`
 - PR **auf diesen Feature-Branch** stellen, nicht auf `main`
-- regelmäßig den Basis-Branch hereinholen: `git merge franzi/dashboard-rework`
+- regelmäßig den Basis-Branch hereinholen: `git merge <basis-branch>`
 - nur eigene Dateien anfassen; gemeinsame Dateien nur minimal (siehe unten)
 
 ## Laufende Arbeit
 
 | Branch | Basis | PR-Ziel | Inhalt |
 |---|---|---|---|
-| `franzi/dashboard-rework` | `main` | `main` | Dashboard-Umbau, Karte „Add a contact“, LinkedIn-QR-Scan |
-| `speak-to-ai` | `franzi/dashboard-rework` | `franzi/dashboard-rework` | Spracheingabe: Gesprächsnotiz einsprechen → Kontaktfelder vorbefüllen |
+| `speak-to-ai` | `main` | `main` | Spracheingabe: Gesprächsnotiz einsprechen → Kontaktfelder vorbefüllen |
+| `franzi/contacts-rework` | `main` | `main` | Umbau der Kontakte-Seite |
 
 **Speak to AI – wo der Code hingehört**
 - Neu: `src/components/SpeakToAIModal.tsx` (Dialog mit Aufnahme, Live-Text, Weiter-Button)
