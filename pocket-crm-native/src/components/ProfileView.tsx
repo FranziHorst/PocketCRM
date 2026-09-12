@@ -128,17 +128,17 @@ export function ProfileView() {
               <Pencil size={13} color={c.indigo700} />
               <Text style={{ fontSize: 12, fontWeight: '600', color: c.indigo700 }}>Edit</Text>
             </Pressable>
-          ) : undefined}>
+          ) : <View style={{ height: 28 }} />}>
           Personal Networking Goals
         </SectionTitle>
         {editingGoals ? (
           <View style={{ gap: 10 }}>
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
               {goals.map((g) => (
-                <View key={g} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.indigo50, borderWidth: 1, borderColor: c.indigo200, borderRadius: r.md, paddingLeft: 10, paddingRight: 6, paddingVertical: 5 }}>
-                  <Text style={{ fontSize: 12, fontWeight: '500', color: c.indigo800 }}>🎯 {g}</Text>
+                <View key={g} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.indigo50, borderWidth: 1, borderColor: c.indigo200, borderRadius: r.md, paddingLeft: 10, paddingRight: 6, paddingVertical: 4 }}>
+                  <Text style={{ fontSize: 11, fontWeight: '500', color: c.indigo800 }}>🎯 {g}</Text>
                   <Pressable onPress={() => setGoals(goals.filter((x) => x !== g))} hitSlop={6}>
-                    <X size={13} color={c.indigo400} />
+                    <X size={12} color={c.indigo400} />
                   </Pressable>
                 </View>
               ))}
