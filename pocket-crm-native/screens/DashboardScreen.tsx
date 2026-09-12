@@ -7,7 +7,7 @@ import {
   StyleSheet,
   FlatList,
 } from 'react-native';
-import { Plus, LogCheck, Users, MessageSquare, Bell } from 'lucide-react-native';
+import { Plus, Users, MessageSquare } from 'lucide-react-native';
 
 const COLORS = {
   primary: '#4F46E5',

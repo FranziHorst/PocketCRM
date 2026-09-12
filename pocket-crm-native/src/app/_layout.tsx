@@ -1,11 +1,10 @@
 import { Stack } from 'expo-router';
+import { CrmProvider } from '@/store';
 
-export default function Layout() {
+export default function RootLayout() {
   return (
-    <Stack
-      screenOptions={{
-        headerShown: false,
-      }}
-    />
+    <CrmProvider>
+      <Stack screenOptions={{ headerShown: false }} />
+    </CrmProvider>
   );
 }
