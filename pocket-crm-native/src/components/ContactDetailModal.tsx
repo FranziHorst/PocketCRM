@@ -1,25 +1,39 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { Check, MessageSquare, Sparkles, Tag, Trash2 } from 'lucide-react-native';
+import { CalendarDays, Check, Mail, MapPin, MessageSquare, Pencil, Phone, Sparkles, Tag, Trash2 } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { Contact, TagSuggestion } from '../../types';
 import { suggestTags } from '../ai';
 import { c, r } from '../theme';
-import { Avatar, Btn, Choice, Field, Input, ModalShell, confirmAsync } from './ui';
+import { Avatar, Btn, Choice, Field, Input, ModalShell, SocialIcon, confirmAsync, openLink } from './ui';
+import { formatDate } from '../../crmHelpers';
 
 export function ContactDetailModal() {
   const { selectedContact, closeContact } = useCrm();
-  return (
-    <ModalShellWrapper contact={selectedContact} onClose={closeContact} />
-  );
+  if (!selectedContact) return null;
+  return <ContactSheet key={selectedContact.id} contact={selectedContact} onClose={closeContact} />;
 }
 
-function ModalShellWrapper({ contact, onClose }: { contact: Contact | null; onClose: () => void }) {
-  if (!contact) return null;
-  return <ContactForm key={contact.id} contact={contact} onClose={onClose} />;
+function ContactSheet({ contact, onClose }: { contact: Contact; onClose: () => void }) {
+  const isNew = !contact.name.trim();
+  const [current, setCurrent] = useState<Contact>(contact);
+  const [editing, setEditing] = useState(isNew);
+
+  if (editing) {
+    return (
+      <ContactForm
+        contact={current}
+        isNew={isNew && current === contact}
+        onCancel={() => (isNew && current === contact ? onClose() : setEditing(false))}
+        onSaved={(saved) => { setCurrent(saved); setEditing(false); }}
+        onClose={onClose}
+      />
+    );
+  }
+  return <ContactDetails contact={current} onEdit={() => setEditing(true)} onClose={onClose} />;
 }
 
-function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => void }) {
+function ContactForm({ contact, isNew, onCancel, onSaved, onClose }: { contact: Contact; isNew: boolean; onCancel: () => void; onSaved: (c: Contact) => void; onClose: () => void }) {
   const { saveContact, deleteContact, askAIForContact, events } = useCrm();
   const [form, setForm] = useState<Contact>({ ...contact, socialLinks: { ...contact.socialLinks } });
   const [newTag, setNewTag] = useState('');
@@ -64,7 +78,7 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
       sheet
       onClose={onClose}
       title={form.name || 'New Contact'}
-      subtitle="Contact Details"
+      subtitle={isNew ? 'New contact' : 'Edit contact'}
       icon={
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <Avatar name={form.name} color={form.avatarColor} size={36} />
@@ -75,10 +89,10 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
       }
       footer={
         <>
-          <Btn label="Delete" variant="danger" icon={<Trash2 size={14} color={c.rose600} />} onPress={handleDelete} />
+          {isNew ? <View /> : <Btn label="Delete" variant="danger" icon={<Trash2 size={14} color={c.rose600} />} onPress={handleDelete} />}
           <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Btn label="Cancel" variant="ghost" onPress={onClose} />
-            <Btn label="Save Contact" onPress={() => { saveContact(form); onClose(); }} disabled={!form.name.trim()} />
+            <Btn label="Cancel" variant="ghost" onPress={onCancel} />
+            <Btn label={isNew ? 'Add Contact' : 'Save'} onPress={() => { saveContact(form); onSaved(form); }} disabled={!form.name.trim()} />
           </View>
         </>
       }>
@@ -159,6 +173,100 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
         </View>
       </View>
       <View style={{ height: 8 }} />
+    </ModalShell>
+  );
+}
+
+function ContactDetails({ contact: ct, onEdit, onClose }: { contact: Contact; onEdit: () => void; onClose: () => void }) {
+  const { deleteContact, askAIForContact, events } = useCrm();
+  const event = ct.eventId ? events.find((e) => e.id === ct.eventId) : undefined;
+  const sl = ct.socialLinks || {};
+  const socials = (['linkedin', 'twitter', 'instagram', 'website', 'github'] as const).filter((k) => sl[k]);
+
+  const handleDelete = async () => {
+    if (await confirmAsync(`Remove ${ct.name} from your contacts?`)) { deleteContact(ct.id); onClose(); }
+  };
+
+  const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
+    <View style={{ gap: 8 }}>
+      <Text style={{ fontSize: 11, fontWeight: '700', color: c.slate400, textTransform: 'uppercase', letterSpacing: 0.8 }}>{title}</Text>
+      {children}
+    </View>
+  );
+  const Row = ({ icon, text, onPress }: { icon: React.ReactNode; text: string; onPress?: () => void }) => (
+    <Pressable onPress={onPress} disabled={!onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+      <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.slate100, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+      <Text style={{ flex: 1, fontSize: 13, color: onPress ? c.indigo700 : c.slate800 }}>{text}</Text>
+    </Pressable>
+  );
+
+  return (
+    <ModalShell
+      visible
+      sheet
+      onClose={onClose}
+      title={ct.name}
+      subtitle={[ct.role, ct.company].filter(Boolean).join(' • ')}
+      icon={<Avatar name={ct.name} color={ct.avatarColor} size={40} />}
+      footer={
+        <>
+          <Btn label="Delete" variant="danger" icon={<Trash2 size={14} color={c.rose600} />} onPress={handleDelete} />
+          <View style={{ flexDirection: 'row', gap: 8 }}>
+            <Btn label="Ask AI" variant="violet" icon={<MessageSquare size={14} color={c.violet700} />} onPress={() => askAIForContact(ct)} />
+            <Btn label="Edit" icon={<Pencil size={14} color={c.white} />} onPress={onEdit} />
+          </View>
+        </>
+      }>
+      <View style={{ gap: 22 }}>
+        {(ct.location || ct.email || ct.phone) ? (
+          <Section title="Contact">
+            {ct.location ? <Row icon={<MapPin size={14} color={c.slate600} />} text={ct.location} /> : null}
+            {ct.email ? <Row icon={<Mail size={14} color={c.slate600} />} text={ct.email} onPress={() => openLink(`mailto:${ct.email}`)} /> : null}
+            {ct.phone ? <Row icon={<Phone size={14} color={c.slate600} />} text={ct.phone} onPress={() => openLink(`tel:${ct.phone}`)} /> : null}
+          </Section>
+        ) : null}
+
+        {(event || ct.howWeMet || ct.metOn) ? (
+          <Section title="How we met">
+            {event ? <Row icon={<CalendarDays size={14} color={c.slate600} />} text={`${event.name}${event.location ? ` · ${event.location}` : ''}`} /> : null}
+            {ct.metOn ? <Row icon={<Check size={14} color={c.slate600} />} text={`Met on ${formatDate(ct.metOn)}`} /> : null}
+            {ct.howWeMet ? <Text style={{ fontSize: 13, color: c.slate700, lineHeight: 19 }}>{ct.howWeMet}</Text> : null}
+          </Section>
+        ) : null}
+
+        {ct.notes ? (
+          <Section title="Notes">
+            <View style={{ backgroundColor: c.slate50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.slate100 }}>
+              <Text style={{ fontSize: 13, color: c.slate700, lineHeight: 19 }}>{ct.notes}</Text>
+            </View>
+          </Section>
+        ) : null}
+
+        {socials.length > 0 ? (
+          <Section title="Profiles">
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+              {socials.map((k) => <SocialIcon key={k} kind={k} url={sl[k]!} withLabel />)}
+            </View>
+          </Section>
+        ) : null}
+
+        {ct.tags.length > 0 ? (
+          <Section title="Tags">
+            <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
+              {ct.tags.map((t) => (
+                <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.slate100, borderRadius: r.md, paddingHorizontal: 10, paddingVertical: 5 }}>
+                  <Tag size={11} color={c.slate500} />
+                  <Text style={{ fontSize: 12, fontWeight: '500', color: c.slate700 }}>{t}</Text>
+                </View>
+              ))}
+            </View>
+          </Section>
+        ) : null}
+
+        {!ct.location && !ct.email && !ct.phone && !ct.howWeMet && !ct.notes && socials.length === 0 && ct.tags.length === 0 ? (
+          <Text style={{ fontSize: 13, color: c.slate400, textAlign: 'center', paddingVertical: 20 }}>No details yet. Tap Edit to add some.</Text>
+        ) : null}
+      </View>
     </ModalShell>
   );
 }
