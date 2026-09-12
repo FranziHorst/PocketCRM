@@ -12,7 +12,7 @@ type Ctx = { userProfile: UserProfile; contacts: Contact[]; tasks: DailyTask[] }
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export async function askCopilot(message: string, ctx: Ctx): Promise<string> {
+export async function askAssistant(message: string, ctx: Ctx): Promise<string> {
   await wait(700);
   const q = message.toLowerCase();
 
