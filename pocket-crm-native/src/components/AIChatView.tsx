@@ -57,7 +57,7 @@ export function AIChatView() {
   };
 
   return (
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90} style={{ flex: 1, backgroundColor: c.slate50, borderRadius: r.xl, borderWidth: 1, borderColor: c.slate200, overflow: 'hidden' }}>
+    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} keyboardVerticalOffset={90} style={{ flex: 1, backgroundColor: c.slate50 }}>
       <View style={{ backgroundColor: c.white, paddingHorizontal: 14, paddingVertical: 10, borderBottomWidth: 1, borderBottomColor: c.slate200, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
           <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.violet600, alignItems: 'center', justifyContent: 'center' }}>
