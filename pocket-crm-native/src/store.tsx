@@ -63,6 +63,9 @@ type Store = {
 
   chatPrefilledPrompt: string;
   clearPrefilledPrompt: () => void;
+  iceBreakerContactId: string | null;
+  askIceBreakerFor: (contact: Contact) => void;
+  clearIceBreakerRequest: () => void;
   askAIWithPrompt: (prompt: string) => void;
   askAIForContact: (contact: Contact) => void;
 };
@@ -83,6 +86,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [isAccountOpen, setAccountOpen] = useState(false);
   const [isScanOpen, setScanOpen] = useState(false);
   const [chatPrefilledPrompt, setChatPrefilledPrompt] = useState('');
+  const [iceBreakerContactId, setIceBreakerContactId] = useState<string | null>(null);
 
   useEffect(() => {
     (async () => {
@@ -182,6 +186,12 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
       `Give me 3 strategic follow-up talking points or a warm message draft for ${contact.name} (${contact.role} at ${contact.company}). Meeting context: "${contact.howWeMet}". Notes: "${contact.notes}".`
     );
   const clearPrefilledPrompt = () => setChatPrefilledPrompt('');
+  const askIceBreakerFor = (contact: Contact) => {
+    setIceBreakerContactId(contact.id);
+    setNewContact(null);
+    router.replace('/(tabs)/aichat');
+  };
+  const clearIceBreakerRequest = () => setIceBreakerContactId(null);
 
   const value: Store = {
     ready, userProfile, contacts, tasks, notifications, events, currentEvent, pendingCount, unreadCount,
@@ -194,6 +204,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     newContact, openAddContact, closeAddContact,
     isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen, isScanOpen, setScanOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
+    iceBreakerContactId, askIceBreakerFor, clearIceBreakerRequest,
   };
 
   return <CrmContext.Provider value={value}>{children}</CrmContext.Provider>;

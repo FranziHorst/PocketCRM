@@ -1,4 +1,4 @@
-import { Contact, DailyTask, TagSuggestion, UserProfile } from '../types';
+import { Contact, CrmEvent, DailyTask, TagSuggestion, UserProfile } from '../types';
 import { getReminderInfo } from '../crmHelpers';
 
 // ---------------------------------------------------------------------------
@@ -71,4 +71,33 @@ export function summarizeNotes(notes: string, max = 110): string {
   const first = text.split(/(?<=[.!?])\s/)[0];
   const out = first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
   return out;
+}
+
+// TODO(KI): Platzhalter. Baut Ice Breaker aus Notizen, Erstkontakt-Event, Firma und Tags nach festen Mustern.
+// Später ersetzt die echte KI nur diese Funktion; Signatur kann bleiben.
+export function iceBreakersFor(contact: Contact, events: CrmEvent[], seed = 0): string[] {
+  const first = contact.name.split(' ')[0];
+  const event = contact.eventId ? events.find((e) => e.id === contact.eventId) : undefined;
+  const noteSentences = contact.notes.split(/(?<=[.!?])\s+/).map((x) => x.trim()).filter(Boolean);
+  const topic = noteSentences[0]?.replace(/\.$/, '');
+  const pool: string[] = [];
+
+  if (topic) pool.push(`"Last time we talked, you said: '${topic}.' How has that been going since?"`);
+  if (event) pool.push(`"We met at ${event.name} – what was your biggest takeaway from it?"`);
+  if (contact.company) pool.push(`"What's the most exciting thing happening at ${contact.company} right now?"`);
+  if (contact.role) pool.push(`"As ${withArticle(contact.role)}, what's the problem you keep coming back to these days?"`);
+  if (contact.tags.length) pool.push(`"I remember you're into ${contact.tags.slice(0, 2).join(' and ')} – anything new you're excited about there?"`);
+  if (noteSentences[1]) pool.push(`"You also mentioned: '${noteSentences[1].replace(/\.$/, '')}.' Did that move forward?"`);
+  pool.push(`"${first}, what's one thing you'd love an intro to right now?"`);
+  pool.push(`"What's been the highlight of your month, work or otherwise?"`);
+
+  const start = (seed * 3) % pool.length;
+  return [0, 1, 2].map((i) => pool[(start + i) % pool.length]).filter((v, i, a) => a.indexOf(v) === i);
+}
+
+function withArticle(role: string) { return /^[aeiou]/i.test(role) ? `an ${role}` : `a ${role}`; }
+
+export function findContactInText(text: string, contacts: Contact[]): Contact | undefined {
+  const q = text.toLowerCase();
+  return contacts.find((ct) => q.includes(ct.name.toLowerCase()) || q.includes(ct.name.split(' ')[0].toLowerCase()));
 }
