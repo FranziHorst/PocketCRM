@@ -40,6 +40,18 @@ export interface Contact {
   nextReminderDate: string; // ISO date string
   isFavorite?: boolean;
   avatarColor?: string;
+  eventId?: string; // event where we met (see CrmEvent)
+  metOn?: string; // ISO date we first met
+}
+
+export interface CrmEvent {
+  id: string;
+  name: string;
+  startDate: string; // YYYY-MM-DD
+  endDate?: string; // YYYY-MM-DD
+  location?: string;
+  source: "calendar" | "manual";
+  networkAttendees?: number; // demo value until calendar sync between users exists
 }
 
 export interface DailyTask {

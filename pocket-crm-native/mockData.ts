@@ -1,4 +1,4 @@
-import { UserProfile, Contact, DailyTask, AppNotification } from "./types";
+import { UserProfile, Contact, DailyTask, AppNotification, CrmEvent } from "./types";
 
 export const initialUserProfile: UserProfile = {
   id: "user_alex_31",
@@ -34,9 +34,57 @@ const formatOffsetDate = (offsetDays: number): string => {
   return d.toISOString().split("T")[0];
 };
 
+
+export const initialEvents: CrmEvent[] = [
+  {
+    id: "e_meetup",
+    name: "AI Product Meetup",
+    startDate: formatOffsetDate(0),
+    endDate: formatOffsetDate(0),
+    location: "Factory Berlin",
+    source: "calendar",
+    networkAttendees: 2,
+  },
+  {
+    id: "e_yc",
+    name: "YC Demo Day Afterparty",
+    startDate: formatOffsetDate(-10),
+    location: "San Francisco, CA",
+    source: "calendar",
+    networkAttendees: 2,
+  },
+  {
+    id: "e_saastr",
+    name: "SaaStr Annual 2026",
+    startDate: formatOffsetDate(-17),
+    endDate: formatOffsetDate(-15),
+    location: "San Mateo, CA",
+    source: "calendar",
+    networkAttendees: 3,
+  },
+  {
+    id: "e_neurips",
+    name: "NeurIPS 2026",
+    startDate: formatOffsetDate(-21),
+    endDate: formatOffsetDate(-19),
+    location: "Vancouver, BC",
+    source: "calendar",
+    networkAttendees: 1,
+  },
+  {
+    id: "e_stanford",
+    name: "Stanford Alumni Founders Dinner",
+    startDate: formatOffsetDate(-28),
+    location: "Palo Alto, CA",
+    source: "manual",
+  },
+];
+
 export const initialContacts: Contact[] = [
   {
     id: "c1",
+    eventId: "e_saastr",
+    metOn: formatOffsetDate(-16),
     name: "Maya Lin",
     role: "VP of Product",
     company: "Loomis AI",
@@ -59,6 +107,8 @@ export const initialContacts: Contact[] = [
   },
   {
     id: "c2",
+    eventId: "e_stanford",
+    metOn: formatOffsetDate(-28),
     name: "Elena Chen",
     role: "Founding Partner",
     company: "Horizon Catalyst Fund",
@@ -81,6 +131,8 @@ export const initialContacts: Contact[] = [
   },
   {
     id: "c3",
+    eventId: "e_yc",
+    metOn: formatOffsetDate(-10),
     name: "Marcus Brody",
     role: "Co-Founder & CEO",
     company: "Synapse Grid",
@@ -103,6 +155,7 @@ export const initialContacts: Contact[] = [
   },
   {
     id: "c4",
+    metOn: formatOffsetDate(-45),
     name: "Sophia Rodriguez",
     role: "Head of Talent & Ecosystem",
     company: "Krypton Labs",
@@ -124,6 +177,8 @@ export const initialContacts: Contact[] = [
   },
   {
     id: "c5",
+    eventId: "e_neurips",
+    metOn: formatOffsetDate(-20),
     name: "Dr. Aris Thorne",
     role: "Research Scientist",
     company: "Berkeley AI Institute",

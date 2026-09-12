@@ -63,3 +63,12 @@ export async function suggestTags(contact: Contact): Promise<TagSuggestion[]> {
   if (out.length === 0) add('Follow-up', 'Keep the conversation going');
   return out;
 }
+
+// TODO(KI): Später echte Zusammenfassung; bis dahin der erste Satz der Notizen, gekürzt.
+export function summarizeNotes(notes: string, max = 110): string {
+  const text = notes.trim().replace(/\s+/g, ' ');
+  if (!text) return '';
+  const first = text.split(/(?<=[.!?])\s/)[0];
+  const out = first.length > max ? `${first.slice(0, max - 1).trimEnd()}…` : first;
+  return out;
+}

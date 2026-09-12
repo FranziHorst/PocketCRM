@@ -1,14 +1,14 @@
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, Share, Text, View } from 'react-native';
+import { Alert, Platform, Pressable, Share, Switch, Text, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { Download, Edit3, Plus, RotateCcw, Target } from 'lucide-react-native';
+import { CalendarDays, Download, Edit3, Plus, RotateCcw, Target } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { UserProfile } from '../../types';
 import { c, r } from '../theme';
 import { Avatar, Btn, Card, Field, SectionTitle, SocialIcon, confirmAsync } from './ui';
 
 export function ProfileView() {
-  const { userProfile, contacts, updateProfile, setAccountOpen, resetDemoData } = useCrm();
+  const { userProfile, contacts, updateProfile, setAccountOpen, resetDemoData, calendarSync, setCalendarSync } = useCrm();
   const [isEditing, setIsEditing] = useState(false);
   const [form, setForm] = useState<UserProfile>({ ...userProfile, socialLinks: { ...userProfile.socialLinks } });
   const set = (patch: Partial<UserProfile>) => setForm((f) => ({ ...f, ...patch }));
@@ -92,6 +92,22 @@ export function ProfileView() {
           </View>
         </Card>
       )}
+
+      <Card style={{ gap: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
+          <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: c.emerald50, alignItems: 'center', justifyContent: 'center' }}>
+            <CalendarDays size={16} color={c.emerald700} />
+          </View>
+          <View style={{ flex: 1 }}>
+            <Text style={{ fontSize: 14, fontWeight: '700', color: c.slate900 }}>Calendar sync</Text>
+            <Text style={{ fontSize: 11, color: c.slate500 }}>Events from your calendar show up under Contacts → Events</Text>
+          </View>
+          <Switch value={calendarSync} onValueChange={setCalendarSync} trackColor={{ true: c.emerald500, false: c.slate200 }} thumbColor={c.white} />
+        </View>
+        <Text style={{ fontSize: 11, color: c.slate500, lineHeight: 16, backgroundColor: c.slate50, padding: 10, borderRadius: r.lg, borderWidth: 1, borderColor: c.slate100 }}>
+          Coming soon: new contacts are linked to the event you're at, and you'll see which people from your network are going to the same events. The events shown today are demo data.
+        </Text>
+      </Card>
 
       <Card style={{ gap: 10 }}>
         <Text style={{ fontSize: 14, fontWeight: '700', color: c.slate900 }}>User Account Management</Text>

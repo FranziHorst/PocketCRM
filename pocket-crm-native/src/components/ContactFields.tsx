@@ -1,45 +1,24 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Pressable, Text, View } from 'react-native';
-import { Calendar, Check, Clock, MessageSquare, Sparkles, Tag, Trash2 } from 'lucide-react-native';
+import { Check, Sparkles, Tag } from 'lucide-react-native';
 import { useCrm } from '../store';
-import { Contact, ReminderCadence, TagSuggestion } from '../../types';
-import { calculateNextReminder, getReminderInfo } from '../../crmHelpers';
+import { Contact, TagSuggestion } from '../../types';
 import { suggestTags } from '../ai';
-import { c, r, reminderColors } from '../theme';
-import { Avatar, Badge, Btn, Choice, Field, Input, Label, ModalShell, confirmAsync } from './ui';
+import { c, r } from '../theme';
+import { Btn, Field, Input, SelectField } from './ui';
+import { formatDate } from '../../crmHelpers';
 
-const CADENCES: { value: ReminderCadence; label: string }[] = [
-  { value: 'weekly', label: 'Weekly (7d)' },
-  { value: 'biweekly', label: 'Bi-weekly (14d)' },
-  { value: 'monthly', label: 'Monthly (30d)' },
-  { value: 'quarterly', label: 'Quarterly (90d)' },
-  { value: 'none', label: 'None' },
-];
-
-export function ContactDetailModal() {
-  const { selectedContact, closeContact } = useCrm();
-  return (
-    <ModalShellWrapper contact={selectedContact} onClose={closeContact} />
-  );
-}
-
-function ModalShellWrapper({ contact, onClose }: { contact: Contact | null; onClose: () => void }) {
-  if (!contact) return null;
-  return <ContactForm key={contact.id} contact={contact} onClose={onClose} />;
-}
-
-function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => void }) {
-  const { saveContact, deleteContact, logTouchpoint, askAIForContact } = useCrm();
-  const [form, setForm] = useState<Contact>({ ...contact, socialLinks: { ...contact.socialLinks } });
+// Formularfelder eines Kontakts; wird vom "New contact"-Sheet und vom Bearbeiten-Modus der Kontaktseite genutzt.
+export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: Contact) => void }) {
+  const { events } = useCrm();
   const [newTag, setNewTag] = useState('');
   const [suggesting, setSuggesting] = useState(false);
   const [suggestions, setSuggestions] = useState<TagSuggestion[]>([]);
   const [selected, setSelected] = useState<string[]>([]);
   const [aiError, setAiError] = useState<string | null>(null);
 
-  const rem = getReminderInfo(form);
-  const set = (patch: Partial<Contact>) => setForm((f) => ({ ...f, ...patch }));
-  const setSocial = (key: keyof Contact['socialLinks'], v: string) => setForm((f) => ({ ...f, socialLinks: { ...f.socialLinks, [key]: v } }));
+  const set = (patch: Partial<Contact>) => setForm({ ...form, ...patch });
+  const setSocial = (key: keyof Contact['socialLinks'], v: string) => setForm({ ...form, socialLinks: { ...form.socialLinks, [key]: v } });
 
   const handleSuggest = async () => {
     setSuggesting(true); setAiError(null); setSuggestions([]); setSelected([]);
@@ -61,49 +40,8 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
     setNewTag('');
   };
 
-  const handleDelete = async () => {
-    if (await confirmAsync(`Remove ${form.name || 'this contact'} from your contacts?`)) {
-      deleteContact(form.id);
-      onClose();
-    }
-  };
-
   return (
-    <ModalShell
-      visible
-      sheet
-      onClose={onClose}
-      title={form.name || 'New Contact'}
-      subtitle="Contact Details & Reminders"
-      icon={
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-          <Avatar name={form.name} color={form.avatarColor} size={36} />
-          <Pressable onPress={() => askAIForContact(form)} style={{ padding: 6, borderRadius: r.md }}>
-            <MessageSquare size={16} color={c.indigo600} />
-          </Pressable>
-        </View>
-      }
-      footer={
-        <>
-          <Btn label="Delete" variant="danger" icon={<Trash2 size={14} color={c.rose600} />} onPress={handleDelete} />
-          <View style={{ flexDirection: 'row', gap: 8 }}>
-            <Btn label="Cancel" variant="ghost" onPress={onClose} />
-            <Btn label="Save Contact" onPress={() => { saveContact(form); onClose(); }} disabled={!form.name.trim()} />
-          </View>
-        </>
-      }>
-      <View style={{ backgroundColor: c.slate50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.slate200, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8, marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, flex: 1, flexWrap: 'wrap' }}>
-          <Clock size={16} color={c.indigo600} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: c.slate800 }}>Reminder:</Text>
-          <Badge label={rem.label} colors={reminderColors(rem.status, rem.daysDifference)} />
-        </View>
-        <Btn label="Contacted Today" variant="success" icon={<Check size={12} color={c.white} />} onPress={() => {
-          logTouchpoint(form.id);
-          set({ lastContacted: new Date().toISOString().split('T')[0], nextReminderDate: calculateNextReminder(form.reminderCadence) });
-        }} />
-      </View>
-
+    <View>
       <Field label="Full Name *" value={form.name} onChangeText={(v) => set({ name: v })} placeholder="e.g., Maya Lin" />
       <Field label="Job Title / Role" value={form.role} onChangeText={(v) => set({ role: v })} placeholder="e.g., VP of Product" />
       <Field label="Company / Organization" value={form.company} onChangeText={(v) => set({ company: v })} placeholder="e.g., Loomis AI" />
@@ -111,22 +49,21 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
       <Field label="Phone Number" value={form.phone || ''} onChangeText={(v) => set({ phone: v })} placeholder="+1 (415) ..." keyboardType="phone-pad" />
       <Field label="Location" value={form.location || ''} onChangeText={(v) => set({ location: v })} placeholder="e.g., San Francisco, CA" />
 
-      <View style={{ backgroundColor: c.indigo50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.indigo100, marginBottom: 16 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginBottom: 10 }}>
-          <Calendar size={14} color={c.indigo600} />
-          <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>Reminder Schedule & Follow-up Cadence</Text>
-        </View>
-        <Choice label="Frequency" value={form.reminderCadence} options={CADENCES} onChange={(v) => set({ reminderCadence: v, nextReminderDate: calculateNextReminder(v) })} />
-        <Field label="Next Due Date (YYYY-MM-DD)" value={form.nextReminderDate || ''} onChangeText={(v) => set({ nextReminderDate: v })} placeholder="2026-09-30" autoCapitalize="none" />
-      </View>
-
       <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900, marginBottom: 8 }}>Connected Social Media Profiles</Text>
       <Field label="LinkedIn" value={form.socialLinks.linkedin || ''} onChangeText={(v) => setSocial('linkedin', v)} placeholder="https://linkedin.com/in/..." autoCapitalize="none" />
       <Field label="X / Twitter" value={form.socialLinks.twitter || ''} onChangeText={(v) => setSocial('twitter', v)} placeholder="https://x.com/... or @handle" autoCapitalize="none" />
       <Field label="Instagram" value={form.socialLinks.instagram || ''} onChangeText={(v) => setSocial('instagram', v)} placeholder="https://instagram.com/..." autoCapitalize="none" />
       <Field label="Website" value={form.socialLinks.website || ''} onChangeText={(v) => setSocial('website', v)} placeholder="Personal website or blog URL" autoCapitalize="none" />
 
-      <Field label="How We Met / Mutual Connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
+      <SelectField
+        label="First met at"
+        value={form.eventId ?? ''}
+        placeholder="No event"
+        searchable={events.length > 6}
+        options={[{ value: '', label: 'No event' }, ...events.map((ev) => ({ value: ev.id, label: ev.name, sub: [formatDate(ev.startDate), ev.location].filter(Boolean).join(' · ') }))]}
+        onChange={(v) => set({ eventId: v || undefined })}
+      />
+      <Field label="How we met / mutual connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
       <Field label="Conversation Notes, Interests & Follow-up Context" value={form.notes} onChangeText={(v) => set({ notes: v })} multiline placeholder="Key discussion topics, what they care about, personal details, collaboration ideas..." />
 
       <View style={{ backgroundColor: c.slate50, padding: 14, borderRadius: r.xl, borderWidth: 1, borderColor: c.slate200, gap: 10 }}>
@@ -183,7 +120,6 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
           <Btn label="Add" variant="ghost" onPress={addTag} />
         </View>
       </View>
-      <View style={{ height: 8 }} />
-    </ModalShell>
+    </View>
   );
 }
