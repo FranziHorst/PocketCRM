@@ -18,6 +18,7 @@ export interface UserProfile {
   networkingGoals: string[];
   socialLinks: SocialMediaLinks;
   avatarColor?: string;
+  avatarUri?: string; // data URI of the profile photo
   joinedDate?: string;
 }
 
