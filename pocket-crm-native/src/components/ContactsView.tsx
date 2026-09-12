@@ -189,9 +189,6 @@ export function ContactsView() {
             style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 4, fontSize: 12, color: c.slate900 }}
           />
           {searchQuery ? <Pressable onPress={() => { setSearchQuery(''); setShowSuggestions(false); }} hitSlop={6}><X size={14} color={c.slate400} /></Pressable> : null}
-          <Pressable onPress={() => setFavoritesOnly(!favoritesOnly)} hitSlop={6} accessibilityLabel="Favorites only" style={{ padding: 4, borderRadius: r.md, backgroundColor: favoritesOnly ? c.amber50 : 'transparent' }}>
-            <Star size={16} color={c.amber500} fill={favoritesOnly ? c.amber500 : 'transparent'} />
-          </Pressable>
         </View>
 
         {showSuggestions && suggestions.length > 0 && (
@@ -222,15 +219,24 @@ export function ContactsView() {
         )}
       </View>
 
-      <View style={{ flexDirection: 'row', backgroundColor: c.slate100, borderRadius: r.lg, padding: 3 }}>
-        {GROUPINGS.map((g) => {
-          const on = contactsGrouping === g.value;
-          return (
-            <Pressable key={g.value} onPress={() => setContactsGrouping(g.value)} style={{ flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center', backgroundColor: on ? c.white : 'transparent' }}>
-              <Text style={{ fontSize: 12, fontWeight: on ? '700' : '500', color: on ? c.slate900 : c.slate500 }}>{g.label}</Text>
-            </Pressable>
-          );
-        })}
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
+        <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.slate100, borderRadius: r.lg, padding: 3 }}>
+          {GROUPINGS.map((g) => {
+            const on = contactsGrouping === g.value;
+            return (
+              <Pressable key={g.value} onPress={() => setContactsGrouping(g.value)} style={{ flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center', backgroundColor: on ? c.white : 'transparent' }}>
+                <Text style={{ fontSize: 12, fontWeight: on ? '700' : '500', color: on ? c.slate900 : c.slate500 }}>{g.label}</Text>
+              </Pressable>
+            );
+          })}
+        </View>
+        <Pressable
+          onPress={() => setFavoritesOnly(!favoritesOnly)}
+          accessibilityLabel="Favorites only"
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 9, borderRadius: r.lg, borderWidth: 1, borderColor: favoritesOnly ? c.amber400 : c.slate200, backgroundColor: favoritesOnly ? c.amber50 : c.white }}>
+          <Star size={14} color={c.amber500} fill={favoritesOnly ? c.amber500 : 'transparent'} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: favoritesOnly ? c.amber800 : c.slate600 }}>Favorites</Text>
+        </Pressable>
       </View>
 
       {filtered.length === 0 ? (
