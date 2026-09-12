@@ -1,14 +1,16 @@
 import React, { useMemo, useState } from 'react';
-import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { CalendarDays, MapPin, Search, Sparkles, Star, Tag, Users } from 'lucide-react-native';
+import { Pressable, Text, TextInput, View } from 'react-native';
+import { Building2, CalendarDays, MapPin, Search, Sparkles, Star, Tag, User, Users, X } from 'lucide-react-native';
 import { ContactsGrouping, useCrm } from '../store';
 import { Contact, CrmEvent } from '../../types';
 import { summarizeNotes } from '../ai';
 import { formatDate } from '../../crmHelpers';
 import { c, r } from '../theme';
-import { Avatar, Card, Chip } from './ui';
+import { Avatar, Card } from './ui';
 
 type Group = { key: string; title: string; contacts: Contact[]; event?: CrmEvent };
+type Filter = { kind: 'tag' | 'company' | 'event'; value: string; label: string };
+type Suggestion = { key: string; kind: 'contact' | 'company' | 'tag' | 'event'; label: string; sub?: string; contact?: Contact; filter?: Filter };
 
 const GROUPINGS: { value: ContactsGrouping; label: string }[] = [
   { value: 'recent', label: 'Recent' },
@@ -64,21 +66,37 @@ function eventDateLabel(ev: CrmEvent): string {
 export function ContactsView() {
   const { contacts, events, openContact, contactsGrouping, setContactsGrouping } = useCrm();
   const [searchQuery, setSearchQuery] = useState('');
-  const [selectedTag, setSelectedTag] = useState('all');
+  const [filter, setFilter] = useState<Filter | null>(null);
+  const [showSuggestions, setShowSuggestions] = useState(false);
 
-  const allTags = useMemo(() => Array.from(new Set(contacts.flatMap((ct) => ct.tags))), [contacts]);
+  const setTagFilter = (tag: string) => { setFilter({ kind: 'tag', value: tag, label: `#${tag}` }); setSearchQuery(''); setShowSuggestions(false); };
+
+  const suggestions = useMemo<Suggestion[]>(() => {
+    const q = searchQuery.trim().toLowerCase();
+    if (!q) return [];
+    const out: Suggestion[] = [];
+    const seen = new Set<string>();
+    const push = (sg: Suggestion) => { if (!seen.has(sg.key)) { seen.add(sg.key); out.push(sg); } };
+    contacts.forEach((ct) => { if (ct.name.toLowerCase().includes(q)) push({ key: `c:${ct.id}`, kind: 'contact', label: ct.name, sub: `${ct.role} • ${ct.company}`, contact: ct }); });
+    contacts.forEach((ct) => { if (ct.company && ct.company.toLowerCase().includes(q)) push({ key: `co:${ct.company}`, kind: 'company', label: ct.company, sub: 'Company', filter: { kind: 'company', value: ct.company, label: ct.company } }); });
+    contacts.flatMap((ct) => ct.tags).forEach((t) => { if (t.toLowerCase().includes(q)) push({ key: `t:${t}`, kind: 'tag', label: `#${t}`, sub: 'Tag', filter: { kind: 'tag', value: t, label: `#${t}` } }); });
+    events.forEach((ev) => { if (ev.name.toLowerCase().includes(q)) push({ key: `e:${ev.id}`, kind: 'event', label: ev.name, sub: 'Event', filter: { kind: 'event', value: ev.id, label: ev.name } }); });
+    return out.slice(0, 7);
+  }, [searchQuery, contacts, events]);
 
   const filtered = useMemo(() => contacts.filter((ct) => {
-    if (selectedTag !== 'all' && !ct.tags.includes(selectedTag)) return false;
+    if (filter?.kind === 'tag' && !ct.tags.includes(filter.value)) return false;
+    if (filter?.kind === 'company' && ct.company !== filter.value) return false;
+    if (filter?.kind === 'event' && ct.eventId !== filter.value) return false;
     if (!searchQuery.trim()) return true;
     const q = searchQuery.toLowerCase();
     return [ct.name, ct.company, ct.role, ct.notes, ct.howWeMet, ...ct.tags].some((v) => v.toLowerCase().includes(q));
-  }), [contacts, searchQuery, selectedTag]);
+  }), [contacts, searchQuery, filter]);
 
   const favorites = filtered.filter((ct) => ct.isFavorite);
   const groups = useMemo(() => buildGroups(filtered.filter((ct) => !ct.isFavorite), contactsGrouping, events), [filtered, contactsGrouping, events]);
 
-  const resetFilters = () => { setSearchQuery(''); setSelectedTag('all'); };
+  const resetFilters = () => { setSearchQuery(''); setFilter(null); setShowSuggestions(false); };
 
   const renderContact = (ct: Contact) => {
     const summary = summarizeNotes(ct.notes);
@@ -105,7 +123,7 @@ export function ContactsView() {
           {ct.tags.length > 0 && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
               {ct.tags.map((t) => (
-                <Pressable key={t} onPress={() => setSelectedTag(t)} style={{ backgroundColor: c.slate100, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
+                <Pressable key={t} onPress={() => setTagFilter(t)} style={{ backgroundColor: c.slate100, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
                   <Text style={{ fontSize: 10, fontWeight: '500', color: c.slate600 }}>#{t}</Text>
                 </Pressable>
               ))}
@@ -152,10 +170,52 @@ export function ContactsView() {
         <Text style={{ fontSize: 12, color: c.slate500 }}>{contacts.length} connections</Text>
       </View>
 
-      <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.white, borderWidth: 1, borderColor: c.slate200, borderRadius: r.lg, paddingHorizontal: 12 }}>
-        <Search size={16} color={c.slate400} />
-        <TextInput value={searchQuery} onChangeText={setSearchQuery} placeholder="Search by name, role, tags, or notes..." placeholderTextColor={c.slate400} style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 8, fontSize: 12, color: c.slate900 }} />
-        {searchQuery ? <Pressable onPress={() => setSearchQuery('')}><Text style={{ fontSize: 12, color: c.slate400 }}>Clear</Text></Pressable> : null}
+      <View style={{ zIndex: 10 }}>
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.white, borderWidth: 1, borderColor: showSuggestions && suggestions.length ? c.indigo500 : c.slate200, borderRadius: r.lg, paddingHorizontal: 12 }}>
+          <Search size={16} color={c.slate400} />
+          {filter ? (
+            <Pressable onPress={() => setFilter(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.indigo600, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 3 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: c.white }}>{filter.label}</Text>
+              <X size={12} color={c.white} />
+            </Pressable>
+          ) : null}
+          <TextInput
+            value={searchQuery}
+            onChangeText={(v) => { setSearchQuery(v); setShowSuggestions(true); }}
+            onFocus={() => setShowSuggestions(true)}
+            placeholder={filter ? 'Search within…' : 'Search people, companies, tags, events…'}
+            placeholderTextColor={c.slate400}
+            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 4, fontSize: 12, color: c.slate900 }}
+          />
+          {searchQuery ? <Pressable onPress={() => { setSearchQuery(''); setShowSuggestions(false); }} hitSlop={6}><X size={14} color={c.slate400} /></Pressable> : null}
+        </View>
+
+        {showSuggestions && suggestions.length > 0 && (
+          <View style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 6, backgroundColor: c.white, borderWidth: 1, borderColor: c.slate200, borderRadius: r.lg, overflow: 'hidden', shadowColor: c.slate900, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
+            {suggestions.map((sg, i) => {
+              const Icon = sg.kind === 'contact' ? User : sg.kind === 'company' ? Building2 : sg.kind === 'tag' ? Tag : CalendarDays;
+              return (
+                <Pressable
+                  key={sg.key}
+                  onPress={() => {
+                    if (sg.contact) { openContact(sg.contact); setShowSuggestions(false); return; }
+                    if (sg.filter) { setFilter(sg.filter); setSearchQuery(''); setShowSuggestions(false); }
+                  }}
+                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: pressed ? c.slate50 : c.white, borderTopWidth: i ? 1 : 0, borderTopColor: c.slate100 })}>
+                  {sg.contact ? <Avatar name={sg.contact.name} color={sg.contact.avatarColor} size={26} /> : (
+                    <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.slate100, alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={13} color={c.slate600} />
+                    </View>
+                  )}
+                  <View style={{ flex: 1 }}>
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: c.slate900 }} numberOfLines={1}>{sg.label}</Text>
+                    {sg.sub ? <Text style={{ fontSize: 10, color: c.slate500 }} numberOfLines={1}>{sg.sub}</Text> : null}
+                  </View>
+                </Pressable>
+              );
+            })}
+          </View>
+        )}
       </View>
 
       <View style={{ flexDirection: 'row', backgroundColor: c.slate100, borderRadius: r.lg, padding: 3 }}>
@@ -168,13 +228,6 @@ export function ContactsView() {
           );
         })}
       </View>
-
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 6 }}>
-        <Chip label={`All (${contacts.length})`} active={selectedTag === 'all'} onPress={() => setSelectedTag('all')} />
-        {allTags.map((tag) => (
-          <Chip key={tag} label={tag} icon={<Tag size={12} color={selectedTag === tag ? c.white : c.slate500} />} active={selectedTag === tag} activeBg={c.indigo600} onPress={() => setSelectedTag(selectedTag === tag ? 'all' : tag)} />
-        ))}
-      </ScrollView>
 
       {filtered.length === 0 ? (
         <Card style={{ alignItems: 'center', padding: 28, gap: 6 }}>
