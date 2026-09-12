@@ -1,7 +1,7 @@
 import React from 'react';
 import { Pressable, ScrollView, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowRight, Calendar, CalendarCheck, Check, CheckCircle2, Circle, Clock, MessageSquare, Plus, Sparkles, TrendingUp, UserPlus } from 'lucide-react-native';
+import { ArrowRight, Calendar, Check, CheckCircle2, Circle, Clock, MessageSquare, Plus, Sparkles, TrendingUp, UserPlus } from 'lucide-react-native';
 import { useRouter } from 'expo-router';
 import { useCrm } from '../store';
 import { getGreeting, getReminderInfo } from '../../crmHelpers';
@@ -9,7 +9,7 @@ import { c, r, priorityColors, reminderColors } from '../theme';
 import { Avatar, Badge, Btn, Card, SectionTitle } from './ui';
 
 export function DashboardView() {
-  const { userProfile, contacts, tasks, notifications, toggleTask, setAddTaskOpen, openAddContact, openContact, logTouchpoint, dismissNotification, askAIWithPrompt, goToOpeningPage } = useCrm();
+  const { userProfile, contacts, tasks, notifications, toggleTask, setAddTaskOpen, openAddContact, openContact, logTouchpoint, dismissNotification, askAIWithPrompt } = useCrm();
   const router = useRouter();
   const greeting = getGreeting(userProfile.name.split(' ')[0]);
 
@@ -43,7 +43,6 @@ export function DashboardView() {
       </LinearGradient>
 
       <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-        <Btn label="Today's Briefing" icon={<CalendarCheck size={14} color={c.white} />} onPress={goToOpeningPage} />
         <Btn label="Add Task" variant="soft" icon={<Plus size={14} color={c.indigo700} />} onPress={() => setAddTaskOpen(true)} />
         <Btn label="Add Contact" variant="ghost" icon={<UserPlus size={14} color={c.slate700} />} onPress={openAddContact} />
         <Btn label="Ask AI Copilot" variant="violet" icon={<Sparkles size={14} color={c.violet600} />} onPress={() => router.replace('/(tabs)/aichat')} />

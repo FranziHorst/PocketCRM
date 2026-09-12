@@ -46,9 +46,6 @@ type Store = {
   clearPrefilledPrompt: () => void;
   askAIWithPrompt: (prompt: string) => void;
   askAIForContact: (contact: Contact) => void;
-
-  goToOpeningPage: () => void;
-  goToMainApp: () => void;
 };
 
 const CrmContext = createContext<Store | null>(null);
@@ -163,9 +160,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
       avatarColor: 'bg-indigo-600',
     });
 
-  const goToOpeningPage = () => router.replace('/');
-  const goToMainApp = () => router.replace('/(tabs)/dashboard');
-
   const askAIWithPrompt = (prompt: string) => {
     setChatPrefilledPrompt(prompt);
     setSelectedContact(null);
@@ -185,7 +179,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen,
     isNotificationsOpen, setNotificationsOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
-    goToOpeningPage, goToMainApp,
   };
 
   return <CrmContext.Provider value={value}>{children}</CrmContext.Provider>;
