@@ -1,22 +1,17 @@
 import React from 'react';
-import { Pressable, ScrollView, Text, View } from 'react-native';
+import { Pressable, Text, View } from 'react-native';
 import { LinearGradient } from 'expo-linear-gradient';
-import { ArrowRight, Calendar, Check, CheckCircle2, Circle, Clock, MessageSquare, Plus, Sparkles, TrendingUp, UserPlus } from 'lucide-react-native';
-import { useRouter } from 'expo-router';
+import { Calendar, CheckCircle2, Circle, Plus, TrendingUp } from 'lucide-react-native';
 import { useCrm } from '../store';
-import { getGreeting, getReminderInfo } from '../../crmHelpers';
-import { c, r, priorityColors, reminderColors } from '../theme';
-import { Avatar, Badge, Btn, Card, SectionTitle } from './ui';
+import { getGreeting } from '../../crmHelpers';
+import { c, r, priorityColors } from '../theme';
+import { Badge, Card, SectionTitle } from './ui';
+import { AddContactCard } from './AddContactCard';
 
 export function DashboardView() {
-  const { userProfile, contacts, tasks, notifications, toggleTask, setAddTaskOpen, openAddContact, openContact, logTouchpoint, dismissNotification, askAIWithPrompt } = useCrm();
-  const router = useRouter();
+  const { userProfile, contacts, tasks, notifications, toggleTask, setAddTaskOpen, dismissNotification } = useCrm();
   const greeting = getGreeting(userProfile.name.split(' ')[0]);
 
-  const urgentContacts = contacts.filter((ct) => {
-    const s = getReminderInfo(ct).status;
-    return s === 'overdue' || s === 'today';
-  });
   const pendingTasks = tasks.filter((t) => !t.completed);
   const unread = notifications.filter((n) => !n.read);
 
@@ -31,7 +26,6 @@ export function DashboardView() {
         <View style={{ flexDirection: 'row', gap: 8, marginTop: 16, paddingTop: 16, borderTopWidth: 1, borderTopColor: 'rgba(67,56,202,0.5)' }}>
           {[
             { l: 'Pending Tasks', v: pendingTasks.length, col: c.white },
-            { l: 'Due Contacts', v: urgentContacts.length, col: c.amber300 },
             { l: 'Total Network', v: contacts.length, col: c.emerald300 },
           ].map((m) => (
             <View key={m.l} style={{ flex: 1, backgroundColor: 'rgba(255,255,255,0.1)', borderRadius: r.lg, padding: 10 }}>
@@ -42,53 +36,7 @@ export function DashboardView() {
         </View>
       </LinearGradient>
 
-      <ScrollView horizontal showsHorizontalScrollIndicator={false} contentContainerStyle={{ gap: 8 }}>
-        <Btn label="Add Task" variant="soft" icon={<Plus size={14} color={c.indigo700} />} onPress={() => setAddTaskOpen(true)} />
-        <Btn label="Add Contact" variant="ghost" icon={<UserPlus size={14} color={c.slate700} />} onPress={openAddContact} />
-        <Btn label="Ask AI Copilot" variant="violet" icon={<Sparkles size={14} color={c.violet600} />} onPress={() => router.replace('/(tabs)/aichat')} />
-        <Btn label="Reminders" variant="ghost" icon={<Clock size={14} color={c.slate700} />} onPress={() => router.replace('/(tabs)/contacts')} />
-      </ScrollView>
-
-      {urgentContacts.length > 0 && (
-        <View style={{ backgroundColor: c.amber50, borderWidth: 1, borderColor: c.amber200, borderRadius: r.xl, padding: 16 }}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-              <View style={{ width: 8, height: 8, borderRadius: 4, backgroundColor: c.amber500 }} />
-              <Text style={{ fontSize: 11, fontWeight: '700', color: c.amber900, textTransform: 'uppercase', letterSpacing: 1 }}>Contact Reminders Due ({urgentContacts.length})</Text>
-            </View>
-            <Pressable onPress={() => router.replace('/(tabs)/contacts')} style={{ flexDirection: 'row', alignItems: 'center', gap: 2 }}>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: c.amber900 }}>View All</Text>
-              <ArrowRight size={12} color={c.amber900} />
-            </Pressable>
-          </View>
-          <View style={{ gap: 8 }}>
-            {urgentContacts.slice(0, 2).map((ct) => {
-              const rem = getReminderInfo(ct);
-              return (
-                <View key={ct.id} style={{ backgroundColor: c.white, borderRadius: r.lg, padding: 12, borderWidth: 1, borderColor: c.amber200, flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-                  <Pressable onPress={() => openContact(ct)} style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-                    <Avatar name={ct.name} color={ct.avatarColor} size={32} />
-                    <View style={{ flex: 1 }}>
-                      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, flexWrap: 'wrap' }}>
-                        <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>{ct.name}</Text>
-                        <Badge label={rem.label} colors={reminderColors(rem.status, rem.daysDifference)} />
-                      </View>
-                      <Text style={{ fontSize: 11, color: c.slate500 }} numberOfLines={1}>{ct.role} at {ct.company}</Text>
-                    </View>
-                  </Pressable>
-                  <Pressable onPress={() => logTouchpoint(ct.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 8, paddingVertical: 5, borderRadius: r.md, backgroundColor: c.slate100 }}>
-                    <Check size={12} color={c.emerald600} />
-                    <Text style={{ fontSize: 11, fontWeight: '500', color: c.slate700 }}>Log</Text>
-                  </Pressable>
-                  <Pressable onPress={() => askAIWithPrompt(`Draft a friendly follow-up message to ${ct.name} (${ct.role} at ${ct.company}) referencing our previous discussion: "${ct.notes}". Keep it natural and ready to send via LinkedIn or WhatsApp.`)} style={{ padding: 6, borderRadius: r.md, backgroundColor: c.indigo50 }}>
-                    <MessageSquare size={14} color={c.indigo700} />
-                  </Pressable>
-                </View>
-              );
-            })}
-          </View>
-        </View>
-      )}
+      <AddContactCard />
 
       <Card>
         <SectionTitle

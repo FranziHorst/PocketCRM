@@ -18,6 +18,31 @@ Diese Datei gilt für Codex, Claude Code und jeden anderen Agenten. `CLAUDE.md` 
 | `<name>/<aufgabe>` | Kurze Arbeits-Branches, z. B. `codex/kontakte-sortierung`. Von `main` abzweigen. |
 
 Ablauf: `git pull` auf `main` → neuen Branch → arbeiten → Pull Request nach `main` → mergen.
+Gemergte Branches werden automatisch gelöscht (GitHub-Einstellung). Lokal danach `git branch -d <branch>`.
+
+### Aufbauende Branches („stacked“)
+
+Baut ein Feature auf einem Branch auf, der noch nicht in `main` ist, dann:
+- vom **Feature-Branch** abzweigen, nicht von `main`
+- PR **auf diesen Feature-Branch** stellen, nicht auf `main`
+- regelmäßig den Basis-Branch hereinholen: `git merge <basis-branch>`
+- nur eigene Dateien anfassen; gemeinsame Dateien nur minimal (siehe unten)
+
+## Laufende Arbeit
+
+| Branch | Basis | PR-Ziel | Inhalt |
+|---|---|---|---|
+| `speak-to-ai` | `main` | `main` | Spracheingabe: Gesprächsnotiz einsprechen → Kontaktfelder vorbefüllen |
+| `franzi/contacts-rework` | `main` | `main` | Umbau der Kontakte-Seite |
+
+**Speak to AI – wo der Code hingehört**
+- Neu: `src/components/SpeakToAIModal.tsx` (Dialog mit Aufnahme, Live-Text, Weiter-Button)
+- Neu: `src/speech.ts` (Spracherkennung) und die Feldzuordnung in `src/ai.ts` (`extractContact(text)` – dort ist die KI-Anbindung als TODO markiert)
+- `src/store.tsx`: nur `isSpeakOpen` / `setSpeakOpen` ergänzen (wie `isScanOpen`)
+- `src/components/Modals.tsx`: nur die eine Zeile `<SpeakToAIModal />`
+- `src/components/AddContactCard.tsx`: nur den `onPress` des Buttons auf `setSpeakOpen(true)` umstellen
+- Am Ende wird der Kontakt-Dialog vorbefüllt geöffnet: `openAddContact({ name, role, company, howWeMet, notes })` – genau wie beim QR-Scan in `ScanLinkedInModal.tsx`
+- Natives Modul für Sprache (z. B. `expo-speech-recognition`) nur mit `npx expo install`; danach braucht der iOS-Simulator einen Neubau (`npx expo prebuild -p ios --clean`, `pod install`), siehe README
 
 ## Regeln für Änderungen
 
