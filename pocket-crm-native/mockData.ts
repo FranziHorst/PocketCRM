@@ -1,0 +1,218 @@
+import { UserProfile, Contact, DailyTask, AppNotification } from "../types";
+
+export const initialUserProfile: UserProfile = {
+  id: "user_alex_31",
+  name: "Alex Vance",
+  email: "alex.vance@netweave.co",
+  age: 31,
+  jobTitle: "Founder & Community Scout",
+  company: "Apex Ventures & Co.",
+  location: "San Francisco, CA",
+  bio: "Passionate about connecting early-stage founders with visionary angels. Coffee enthusiast, tech conference speaker, and believer in authentic, long-term relationships.",
+  networkingGoals: [
+    "Seed Stage Angel Investing",
+    "Founder Introductions",
+    "AI & Climate Tech Mixers",
+    "Monthly Coffee Cadence",
+  ],
+  socialLinks: {
+    linkedin: "https://linkedin.com/in/alexvance-net",
+    twitter: "https://x.com/alexv_builds",
+    instagram: "https://instagram.com/alexv_sf",
+    website: "https://alexvance.blog",
+    github: "https://github.com/alexvance",
+  },
+  avatarColor: "bg-indigo-600",
+  joinedDate: "2025-01-10",
+};
+
+// Today's reference helper for realistic dates
+const today = new Date();
+const formatOffsetDate = (offsetDays: number): string => {
+  const d = new Date(today);
+  d.setDate(d.getDate() + offsetDays);
+  return d.toISOString().split("T")[0];
+};
+
+export const initialContacts: Contact[] = [
+  {
+    id: "c1",
+    name: "Maya Lin",
+    role: "VP of Product",
+    company: "Loomis AI",
+    email: "maya@loomisai.com",
+    phone: "+1 (415) 882-9012",
+    location: "San Francisco, CA",
+    howWeMet: "Met at SaaStr Annual 2026 breakout panel on agentic UX",
+    notes: "Maya is scaling the design and product team from 6 to 20. Interested in early design systems and wants an intro to top AI UI engineers. Loves pour-over coffee.",
+    tags: ["Product Leader", "AI Infrastructure", "SaaStr 2026", "Coffee Chat"],
+    socialLinks: {
+      linkedin: "https://linkedin.com/in/mayalin-product",
+      twitter: "https://x.com/mayalin_ux",
+      website: "https://mayalin.design",
+    },
+    reminderCadence: "biweekly",
+    lastContacted: formatOffsetDate(-16),
+    nextReminderDate: formatOffsetDate(-2), // Overdue by 2 days!
+    isFavorite: true,
+    avatarColor: "bg-emerald-600",
+  },
+  {
+    id: "c2",
+    name: "Elena Chen",
+    role: "Founding Partner",
+    company: "Horizon Catalyst Fund",
+    email: "elena@horizoncatalyst.vc",
+    phone: "+1 (650) 419-7731",
+    location: "Palo Alto, CA",
+    howWeMet: "Stanford Alumni Founders Dinner",
+    notes: "Writing $500k-$1.5M pre-seed and seed checks for enterprise developer tools and edge computing. Offered to review any deal flow memo I find compelling.",
+    tags: ["Angel Investor", "Stanford Alumni", "Seed VC", "DevTools"],
+    socialLinks: {
+      linkedin: "https://linkedin.com/in/elenachen-vc",
+      twitter: "https://x.com/elenachen_invests",
+      website: "https://horizoncatalyst.vc",
+    },
+    reminderCadence: "monthly",
+    lastContacted: formatOffsetDate(-28),
+    nextReminderDate: formatOffsetDate(0), // Due TODAY!
+    isFavorite: true,
+    avatarColor: "bg-violet-600",
+  },
+  {
+    id: "c3",
+    name: "Marcus Brody",
+    role: "Co-Founder & CEO",
+    company: "Synapse Grid",
+    email: "marcus@synapsegrid.tech",
+    phone: "+1 (415) 301-4458",
+    location: "Oakland, CA",
+    howWeMet: "Y-Combinator Demo Day Afterparty",
+    notes: "Building distributed microgrid automation software. Preparing for their Series A round in Q4. Great sounding board on climate robotics.",
+    tags: ["Tech Founder", "Climate Tech", "YC Alumni", "Series A"],
+    socialLinks: {
+      linkedin: "https://linkedin.com/in/marcusbrody-tech",
+      twitter: "https://x.com/marcus_climate",
+      github: "https://github.com/mbrody-grid",
+    },
+    reminderCadence: "biweekly",
+    lastContacted: formatOffsetDate(-10),
+    nextReminderDate: formatOffsetDate(4), // In 4 days
+    isFavorite: false,
+    avatarColor: "bg-blue-600",
+  },
+  {
+    id: "c4",
+    name: "Sophia Rodriguez",
+    role: "Head of Talent & Ecosystem",
+    company: "Krypton Labs",
+    email: "sophia.r@kryptonlabs.io",
+    location: "Austin, TX / Remote",
+    howWeMet: "Introduced via David Miller for hiring mentorship",
+    notes: "Knows top tech recruiters across North America. Hosting an invite-only networking brunch in Austin during SXSW next spring.",
+    tags: ["Talent", "Ecosystem", "Warm Intro", "Austin Tech"],
+    socialLinks: {
+      linkedin: "https://linkedin.com/in/sophia-rodriguez-talent",
+      instagram: "https://instagram.com/sophiar_austin",
+      twitter: "https://x.com/sophia_recruits",
+    },
+    reminderCadence: "monthly",
+    lastContacted: formatOffsetDate(-45),
+    nextReminderDate: formatOffsetDate(-15), // Overdue
+    isFavorite: false,
+    avatarColor: "bg-rose-600",
+  },
+  {
+    id: "c5",
+    name: "Dr. Aris Thorne",
+    role: "Research Scientist",
+    company: "Berkeley AI Institute",
+    email: "aris.thorne@berkeley.edu",
+    location: "Berkeley, CA",
+    howWeMet: "NeurIPS poster session on low-latency inference",
+    notes: "Deeply knowledgeable in local model quantization and WebGPU. Open to informal advisory roles for hardware-accelerated startups.",
+    tags: ["AI Researcher", "Advisory", "Berkeley", "Technical"],
+    socialLinks: {
+      linkedin: "https://linkedin.com/in/aris-thorne-phd",
+      website: "https://aristhorne.ai",
+      github: "https://github.com/aris-thorne",
+    },
+    reminderCadence: "quarterly",
+    lastContacted: formatOffsetDate(-20),
+    nextReminderDate: formatOffsetDate(40),
+    isFavorite: false,
+    avatarColor: "bg-amber-600",
+  },
+];
+
+export const initialDailyTasks: DailyTask[] = [
+  {
+    id: "t1",
+    title: "Send follow-up email & design portfolio to Maya Lin",
+    contactId: "c1",
+    contactName: "Maya Lin",
+    dueDate: formatOffsetDate(0),
+    completed: false,
+    priority: "high",
+    type: "follow-up",
+  },
+  {
+    id: "t2",
+    title: "Check in with Elena Chen on Q3 deal pipeline note",
+    contactId: "c2",
+    contactName: "Elena Chen",
+    dueDate: formatOffsetDate(0),
+    completed: false,
+    priority: "high",
+    type: "follow-up",
+  },
+  {
+    id: "t3",
+    title: "Review Marcus Brody's Synapse Grid pitch deck updates",
+    contactId: "c3",
+    contactName: "Marcus Brody",
+    dueDate: formatOffsetDate(1),
+    completed: false,
+    priority: "medium",
+    type: "prep",
+  },
+  {
+    id: "t4",
+    title: "Warm intro email: Connect Maya Lin with Sarah from Figma",
+    contactId: "c1",
+    contactName: "Maya Lin",
+    dueDate: formatOffsetDate(-1),
+    completed: true,
+    priority: "medium",
+    type: "intro",
+  },
+];
+
+export const initialNotifications: AppNotification[] = [
+  {
+    id: "n1",
+    title: "Maya Lin Follow-up Overdue",
+    message: "It's been 16 days since your coffee chat at SaaStr. Don't let the momentum cool down!",
+    date: "10 mins ago",
+    read: false,
+    type: "reminder",
+    contactId: "c1",
+  },
+  {
+    id: "n2",
+    title: "Elena Chen Scheduled Reminder Today",
+    message: "Monthly touchpoint scheduled with Elena (Horizon Catalyst). Tap to draft a quick catchup message.",
+    date: "1 hour ago",
+    read: false,
+    type: "reminder",
+    contactId: "c2",
+  },
+  {
+    id: "n3",
+    title: "AI Relationship Insight",
+    message: "3 contacts in your portfolio are hiring product designers. Consider co-hosting an informal dinner.",
+    date: "Yesterday",
+    read: true,
+    type: "ai-insight",
+  },
+];

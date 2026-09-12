@@ -1,0 +1,10 @@
+{
+  "name": "Pocket CRM",
+  "description": "A personal pocket CRM mobile prototype for active networkers featuring daily tasks, friendly greetings, contact follow-up reminders, social media integrations, and an internal voice-enabled AI assistant.",
+  "requestFramePermissions": [
+    "microphone"
+  ],
+  "majorCapabilities": [
+    "MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"
+  ]
+}
