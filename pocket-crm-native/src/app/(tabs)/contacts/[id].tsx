@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { MessageSquare, Pencil, Trash2 } from 'lucide-react-native';
+import { MessageSquare, Pencil, Sparkles, Trash2 } from 'lucide-react-native';
 import { useCrm } from '@/store';
 import { Contact } from '../../../../types';
 import { c, r } from '@/theme';
@@ -11,7 +11,7 @@ import { ContactFields } from '@/components/ContactFields';
 
 export default function ContactPage() {
   const { id } = useLocalSearchParams<{ id: string }>();
-  const { contacts, saveContact, deleteContact, askAIForContact } = useCrm();
+  const { contacts, saveContact, deleteContact, askAIForContact, askIceBreakerFor } = useCrm();
   const router = useRouter();
   const contact = contacts.find((ct) => ct.id === id);
   const [editing, setEditing] = useState(false);
@@ -63,6 +63,7 @@ export default function ContactPage() {
                 <Text style={{ fontSize: 13, color: c.slate600, textAlign: 'center' }}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
               ) : null}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
+                <Btn label="Ice breaker" variant="violet" icon={<Sparkles size={14} color={c.violet700} />} onPress={() => askIceBreakerFor(contact)} />
                 <Btn label="Ask AI" variant="violet" icon={<MessageSquare size={14} color={c.violet700} />} onPress={() => askAIForContact(contact)} />
                 <Btn label="Edit" variant="soft" icon={<Pencil size={14} color={c.indigo700} />} onPress={startEdit} />
               </View>

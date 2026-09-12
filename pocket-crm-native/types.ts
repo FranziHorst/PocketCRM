@@ -81,6 +81,9 @@ export interface ChatMessage {
   text: string;
   timestamp: string;
   suggestedActions?: string[];
+  kind?: "text" | "pickContact" | "iceBreakers";
+  contactId?: string; // for iceBreakers: who they are for
+  seed?: number; // for iceBreakers: which variation was shown
 }
 
 export interface TagSuggestion {
