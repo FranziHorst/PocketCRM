@@ -56,14 +56,14 @@ export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: C
       <Field label="Website" value={form.socialLinks.website || ''} onChangeText={(v) => setSocial('website', v)} placeholder="Personal website or blog URL" autoCapitalize="none" />
 
       <SelectField
-        label="Met at event"
+        label="First met at"
         value={form.eventId ?? ''}
         placeholder="No event"
         searchable={events.length > 6}
         options={[{ value: '', label: 'No event' }, ...events.map((ev) => ({ value: ev.id, label: ev.name, sub: [formatDate(ev.startDate), ev.location].filter(Boolean).join(' · ') }))]}
         onChange={(v) => set({ eventId: v || undefined })}
       />
-      <Field label="How We Met / Mutual Connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
+      <Field label="How we met / mutual connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
       <Field label="Conversation Notes, Interests & Follow-up Context" value={form.notes} onChangeText={(v) => set({ notes: v })} multiline placeholder="Key discussion topics, what they care about, personal details, collaboration ideas..." />
 
       <View style={{ backgroundColor: c.slate50, padding: 14, borderRadius: r.xl, borderWidth: 1, borderColor: c.slate200, gap: 10 }}>

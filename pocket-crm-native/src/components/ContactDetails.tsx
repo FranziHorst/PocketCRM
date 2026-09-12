@@ -41,9 +41,9 @@ export function ContactDetails({ contact: ct }: { contact: Contact }) {
       ) : null}
 
       {(event || ct.howWeMet || ct.metOn) ? (
-        <Section title="How we met">
+        <Section title="First contact">
           {event ? <Row icon={<CalendarDays size={14} color={c.slate600} />} text={`${event.name}${event.location ? ` · ${event.location}` : ''}`} /> : null}
-          {ct.metOn ? <Row icon={<Check size={14} color={c.slate600} />} text={`Met on ${formatDate(ct.metOn)}`} /> : null}
+          {ct.metOn ? <Row icon={<Check size={14} color={c.slate600} />} text={`First met on ${formatDate(ct.metOn)}`} /> : null}
           {ct.howWeMet ? <Text style={{ fontSize: 13, color: c.slate700, lineHeight: 19 }}>{ct.howWeMet}</Text> : null}
         </Section>
       ) : null}
