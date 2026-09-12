@@ -5,7 +5,7 @@ import { useCrm } from '../store';
 import { Contact, TagSuggestion } from '../../types';
 import { suggestTags } from '../ai';
 import { c, r } from '../theme';
-import { Avatar, Btn, Field, Input, ModalShell, confirmAsync } from './ui';
+import { Avatar, Btn, Choice, Field, Input, ModalShell, confirmAsync } from './ui';
 
 export function ContactDetailModal() {
   const { selectedContact, closeContact } = useCrm();
@@ -20,7 +20,7 @@ function ModalShellWrapper({ contact, onClose }: { contact: Contact | null; onCl
 }
 
 function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => void }) {
-  const { saveContact, deleteContact, askAIForContact } = useCrm();
+  const { saveContact, deleteContact, askAIForContact, events } = useCrm();
   const [form, setForm] = useState<Contact>({ ...contact, socialLinks: { ...contact.socialLinks } });
   const [newTag, setNewTag] = useState('');
   const [suggesting, setSuggesting] = useState(false);
@@ -95,6 +95,12 @@ function ContactForm({ contact, onClose }: { contact: Contact; onClose: () => vo
       <Field label="Instagram" value={form.socialLinks.instagram || ''} onChangeText={(v) => setSocial('instagram', v)} placeholder="https://instagram.com/..." autoCapitalize="none" />
       <Field label="Website" value={form.socialLinks.website || ''} onChangeText={(v) => setSocial('website', v)} placeholder="Personal website or blog URL" autoCapitalize="none" />
 
+      <Choice
+        label="Met at event"
+        value={form.eventId ?? ''}
+        options={[{ value: '', label: 'No event' }, ...events.map((ev) => ({ value: ev.id, label: ev.name }))]}
+        onChange={(v) => set({ eventId: v || undefined })}
+      />
       <Field label="How We Met / Mutual Connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
       <Field label="Conversation Notes, Interests & Follow-up Context" value={form.notes} onChangeText={(v) => set({ notes: v })} multiline placeholder="Key discussion topics, what they care about, personal details, collaboration ideas..." />
 
