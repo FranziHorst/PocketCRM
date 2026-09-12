@@ -40,6 +40,12 @@
         {
           "cameraPermission": "Allow Pocket CRM to scan LinkedIn QR codes to add contacts."
         }
+      ],
+      [
+        "expo-image-picker",
+        {
+          "photosPermission": "Allow Pocket CRM to use a photo from your library as your profile picture."
+        }
       ]
     ]
   }

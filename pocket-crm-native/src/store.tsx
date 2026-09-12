@@ -49,7 +49,6 @@ type Store = {
   deleteContact: (contactId: string) => void;
   dismissNotification: (id: string) => void;
   updateProfile: (profile: UserProfile) => void;
-  resetDemoData: () => void;
 
   newContact: Contact | null;
   openAddContact: (prefill?: Partial<Contact>) => void;
@@ -58,8 +57,6 @@ type Store = {
   setScanOpen: (open: boolean) => void;
   isAddTaskOpen: boolean;
   setAddTaskOpen: (open: boolean) => void;
-  isAccountOpen: boolean;
-  setAccountOpen: (open: boolean) => void;
 
   chatPrefilledPrompt: string;
   clearPrefilledPrompt: () => void;
@@ -83,7 +80,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
 
   const [newContact, setNewContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
-  const [isAccountOpen, setAccountOpen] = useState(false);
   const [isScanOpen, setScanOpen] = useState(false);
   const [chatPrefilledPrompt, setChatPrefilledPrompt] = useState('');
   const [iceBreakerContactId, setIceBreakerContactId] = useState<string | null>(null);
@@ -148,14 +144,6 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const dismissNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
   const updateProfile = (profile: UserProfile) => setUserProfile(profile);
 
-  const resetDemoData = () => {
-    setUserProfile(initialUserProfile);
-    setContacts(initialContacts);
-    setTasks(initialDailyTasks);
-    setNotifications(initialNotifications);
-    setEvents(initialEvents);
-  };
-
   const closeAddContact = () => setNewContact(null);
   const openAddContact = (prefill: Partial<Contact> = {}) =>
     setNewContact({
@@ -200,9 +188,9 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     contactsGrouping: settings.contactsGrouping,
     setContactsGrouping: (g) => setSettings((x) => ({ ...x, contactsGrouping: g })),
     toggleTask, addTask, saveContact, deleteContact,
-    dismissNotification, updateProfile, resetDemoData,
+    dismissNotification, updateProfile,
     newContact, openAddContact, closeAddContact,
-    isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen, isScanOpen, setScanOpen,
+    isAddTaskOpen, setAddTaskOpen, isScanOpen, setScanOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
     iceBreakerContactId, askIceBreakerFor, clearIceBreakerRequest,
   };

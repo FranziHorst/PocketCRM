@@ -1,6 +1,6 @@
 import React from 'react';
 import {
-  Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView,
+  Alert, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView,
   StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react-native';
@@ -10,9 +10,13 @@ export const Card = ({ children, style }: { children: React.ReactNode; style?: V
   <View style={[s.card, style]}>{children}</View>
 );
 
-export const Avatar = ({ name, color, size = 32, radius }: { name: string; color?: string; size?: number; radius?: number }) => (
-  <View style={{ width: size, height: size, borderRadius: radius ?? size / 2, backgroundColor: avatarBg(color), alignItems: 'center', justifyContent: 'center' }}>
-    <Text style={{ color: c.white, fontWeight: '700', fontSize: size * 0.42 }}>{name ? name.charAt(0) : '?'}</Text>
+export const Avatar = ({ name, color, uri, size = 32, radius }: { name: string; color?: string; uri?: string; size?: number; radius?: number }) => (
+  <View style={{ width: size, height: size, borderRadius: radius ?? size / 2, backgroundColor: avatarBg(color), alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
+    {uri ? (
+      <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="cover" />
+    ) : (
+      <Text style={{ color: c.white, fontWeight: '700', fontSize: size * 0.42 }}>{name ? name.charAt(0) : '?'}</Text>
+    )}
   </View>
 );
 
