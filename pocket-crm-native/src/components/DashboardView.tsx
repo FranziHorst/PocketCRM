@@ -6,6 +6,7 @@ import { useCrm } from '../store';
 import { getGreeting } from '../../crmHelpers';
 import { c, r, priorityColors } from '../theme';
 import { Badge, Card, SectionTitle } from './ui';
+import { AddContactCard } from './AddContactCard';
 
 export function DashboardView() {
   const { userProfile, contacts, tasks, notifications, toggleTask, setAddTaskOpen, dismissNotification } = useCrm();
@@ -34,6 +35,8 @@ export function DashboardView() {
           ))}
         </View>
       </LinearGradient>
+
+      <AddContactCard />
 
       <Card>
         <SectionTitle

@@ -32,7 +32,9 @@ type Store = {
 
   selectedContact: Contact | null;
   openContact: (contact: Contact) => void;
-  openAddContact: () => void;
+  openAddContact: (prefill?: Partial<Contact>) => void;
+  isScanOpen: boolean;
+  setScanOpen: (open: boolean) => void;
   closeContact: () => void;
   isAddTaskOpen: boolean;
   setAddTaskOpen: (open: boolean) => void;
@@ -57,6 +59,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [selectedContact, setSelectedContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isAccountOpen, setAccountOpen] = useState(false);
+  const [isScanOpen, setScanOpen] = useState(false);
   const [chatPrefilledPrompt, setChatPrefilledPrompt] = useState('');
 
   useEffect(() => {
@@ -132,7 +135,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
 
   const openContact = (contact: Contact) => setSelectedContact(contact);
   const closeContact = () => setSelectedContact(null);
-  const openAddContact = () =>
+  const openAddContact = (prefill: Partial<Contact> = {}) =>
     setSelectedContact({
       id: `c_${Date.now()}`,
       name: '',
@@ -146,6 +149,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
       lastContacted: new Date().toISOString().split('T')[0],
       nextReminderDate: calculateNextReminder('biweekly'),
       avatarColor: 'bg-indigo-600',
+      ...prefill,
     });
 
   const askAIWithPrompt = (prompt: string) => {
@@ -164,7 +168,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     toggleTask, addTask, saveContact, deleteContact, logTouchpoint,
     dismissNotification, updateProfile, resetDemoData,
     selectedContact, openContact, openAddContact, closeContact,
-    isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen,
+    isAddTaskOpen, setAddTaskOpen, isAccountOpen, setAccountOpen, isScanOpen, setScanOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
   };
 
