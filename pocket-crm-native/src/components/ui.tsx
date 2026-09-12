@@ -3,7 +3,7 @@ import {
   Alert, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView,
   StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native';
-import { X } from 'lucide-react-native';
+import { Check, ChevronDown, X } from 'lucide-react-native';
 import { avatarBg, BadgeColors, c, r } from '../theme';
 
 export const Card = ({ children, style }: { children: React.ReactNode; style?: ViewStyle }) => (
@@ -156,3 +156,49 @@ const s = StyleSheet.create({
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.slate100, backgroundColor: c.slate50 },
   modalFooter: { paddingHorizontal: 20, paddingVertical: 12, borderTopWidth: 1, borderTopColor: c.slate100, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', gap: 8 },
 });
+
+// Auswahlfeld für längere Listen: sieht aus wie ein Eingabefeld, öffnet eine Liste von unten.
+export type SelectOption = { value: string; label: string; sub?: string };
+
+export function SelectField({ label, value, options, onChange, placeholder = 'Select…', searchable }:
+  { label: string; value: string; options: SelectOption[]; onChange: (v: string) => void; placeholder?: string; searchable?: boolean }) {
+  const [open, setOpen] = React.useState(false);
+  const [query, setQuery] = React.useState('');
+  const current = options.find((o) => o.value === value);
+  const shown = searchable && query.trim()
+    ? options.filter((o) => `${o.label} ${o.sub ?? ''}`.toLowerCase().includes(query.trim().toLowerCase()))
+    : options;
+
+  return (
+    <View style={{ marginBottom: 10 }}>
+      <Label>{label}</Label>
+      <Pressable onPress={() => { setQuery(''); setOpen(true); }} style={[s.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }]}>
+        <Text style={{ fontSize: 13, color: current ? c.slate900 : c.slate400 }} numberOfLines={1}>{current ? current.label : placeholder}</Text>
+        <ChevronDown size={16} color={c.slate400} />
+      </Pressable>
+
+      <ModalShell visible={open} onClose={() => setOpen(false)} title={label} sheet>
+        {searchable ? (
+          <Input value={query} onChangeText={setQuery} placeholder="Search…" autoFocus style={{ marginBottom: 10 }} />
+        ) : null}
+        <View style={{ borderWidth: 1, borderColor: c.slate200, borderRadius: r.lg, overflow: 'hidden' }}>
+          {shown.length === 0 ? (
+            <Text style={{ fontSize: 12, color: c.slate400, textAlign: 'center', padding: 16 }}>No matches</Text>
+          ) : shown.map((o, i) => {
+            const on = o.value === value;
+            return (
+              <Pressable key={o.value || '__none'} onPress={() => { onChange(o.value); setOpen(false); }}
+                style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 14, paddingVertical: 12, backgroundColor: pressed ? c.slate50 : on ? c.indigo50 : c.white, borderTopWidth: i ? 1 : 0, borderTopColor: c.slate100 })}>
+                <View style={{ flex: 1 }}>
+                  <Text style={{ fontSize: 13, fontWeight: on ? '700' : '500', color: on ? c.indigo700 : c.slate900 }}>{o.label}</Text>
+                  {o.sub ? <Text style={{ fontSize: 11, color: c.slate500, marginTop: 2 }}>{o.sub}</Text> : null}
+                </View>
+                {on ? <Check size={16} color={c.indigo600} /> : null}
+              </Pressable>
+            );
+          })}
+        </View>
+      </ModalShell>
+    </View>
+  );
+}

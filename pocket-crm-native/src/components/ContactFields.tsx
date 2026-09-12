@@ -5,7 +5,8 @@ import { useCrm } from '../store';
 import { Contact, TagSuggestion } from '../../types';
 import { suggestTags } from '../ai';
 import { c, r } from '../theme';
-import { Btn, Choice, Field, Input } from './ui';
+import { Btn, Field, Input, SelectField } from './ui';
+import { formatDate } from '../../crmHelpers';
 
 // Formularfelder eines Kontakts; wird vom "New contact"-Sheet und vom Bearbeiten-Modus der Kontaktseite genutzt.
 export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: Contact) => void }) {
@@ -54,10 +55,12 @@ export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: C
       <Field label="Instagram" value={form.socialLinks.instagram || ''} onChangeText={(v) => setSocial('instagram', v)} placeholder="https://instagram.com/..." autoCapitalize="none" />
       <Field label="Website" value={form.socialLinks.website || ''} onChangeText={(v) => setSocial('website', v)} placeholder="Personal website or blog URL" autoCapitalize="none" />
 
-      <Choice
+      <SelectField
         label="Met at event"
         value={form.eventId ?? ''}
-        options={[{ value: '', label: 'No event' }, ...events.map((ev) => ({ value: ev.id, label: ev.name }))]}
+        placeholder="No event"
+        searchable={events.length > 6}
+        options={[{ value: '', label: 'No event' }, ...events.map((ev) => ({ value: ev.id, label: ev.name, sub: [formatDate(ev.startDate), ev.location].filter(Boolean).join(' · ') }))]}
         onChange={(v) => set({ eventId: v || undefined })}
       />
       <Field label="How We Met / Mutual Connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />

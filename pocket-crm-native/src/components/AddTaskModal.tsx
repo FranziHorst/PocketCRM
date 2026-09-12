@@ -4,7 +4,7 @@ import { CheckSquare } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { DailyTask } from '../../types';
 import { c } from '../theme';
-import { Btn, Choice, Field, ModalShell } from './ui';
+import { Btn, Choice, Field, ModalShell, SelectField } from './ui';
 
 export function AddTaskModal() {
   const { isAddTaskOpen, setAddTaskOpen, contacts, addTask } = useCrm();
@@ -39,7 +39,7 @@ function Form({ onClose, contacts, addTask }: { onClose: () => void; contacts: R
         </View>
       }>
       <Field label="Task Description *" value={title} onChangeText={setTitle} placeholder="e.g., Send follow-up email after coffee..." />
-      <Choice label="Related Contact (Optional)" value={contactId} options={[{ value: '', label: '-- None --' }, ...contacts.map((ct) => ({ value: ct.id, label: `${ct.name} (${ct.company})` }))]} onChange={setContactId} />
+      <SelectField label="Related Contact (Optional)" value={contactId} placeholder="None" searchable={contacts.length > 6} options={[{ value: '', label: 'None' }, ...contacts.map((ct) => ({ value: ct.id, label: ct.name, sub: [ct.role, ct.company].filter(Boolean).join(' • ') }))]} onChange={setContactId} />
       <Field label="Due Date (YYYY-MM-DD)" value={dueDate} onChangeText={setDueDate} placeholder="2026-09-30" autoCapitalize="none" />
       <Choice label="Priority" value={priority} options={[{ value: 'high', label: 'High' }, { value: 'medium', label: 'Medium' }, { value: 'low', label: 'Low' }]} onChange={setPriority} />
       <Choice label="Task Type" value={type} options={[{ value: 'follow-up', label: 'Follow-up Message' }, { value: 'coffee', label: 'Coffee / Meeting' }, { value: 'intro', label: 'Warm Intro' }, { value: 'prep', label: 'Call Prep' }, { value: 'other', label: 'Other' }]} onChange={setType} />
