@@ -1,13 +1,13 @@
 import React, { useMemo, useState } from 'react';
 import { Pressable, ScrollView, Text, TextInput, View } from 'react-native';
-import { Plus, Search, Sparkles, Star, Tag } from 'lucide-react-native';
+import { Search, Sparkles, Star, Tag } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { summarizeNotes } from '../ai';
 import { c, r } from '../theme';
-import { Avatar, Btn, Card, Chip } from './ui';
+import { Avatar, Card, Chip } from './ui';
 
 export function ContactsView() {
-  const { contacts, openContact, openAddContact } = useCrm();
+  const { contacts, openContact } = useCrm();
   const [searchQuery, setSearchQuery] = useState('');
   const [selectedTag, setSelectedTag] = useState('all');
 
@@ -24,12 +24,9 @@ export function ContactsView() {
 
   return (
     <View style={{ gap: 14, paddingBottom: 24 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-        <View>
-          <Text style={{ fontSize: 18, fontWeight: '700', color: c.slate900 }}>Network Contacts</Text>
-          <Text style={{ fontSize: 12, color: c.slate500 }}>{contacts.length} connections</Text>
-        </View>
-        <Btn label="New Contact" icon={<Plus size={14} color={c.white} />} onPress={() => openAddContact()} />
+      <View>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: c.slate900 }}>Network Contacts</Text>
+        <Text style={{ fontSize: 12, color: c.slate500 }}>{contacts.length} connections</Text>
       </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', backgroundColor: c.white, borderWidth: 1, borderColor: c.slate200, borderRadius: r.lg, paddingHorizontal: 12 }}>
