@@ -4,7 +4,7 @@ import * as Clipboard from 'expo-clipboard';
 import { Bot, Check, Copy, RotateCcw, Send, Sparkles, User } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { ChatMessage } from '../../types';
-import { askCopilot } from '../ai';
+import { askAssistant } from '../ai';
 import { c, r } from '../theme';
 
 const SAMPLE_PROMPTS = [
@@ -19,7 +19,7 @@ export function AIChatView() {
   const welcome = (): ChatMessage => ({
     id: 'm_welcome',
     sender: 'assistant',
-    text: `Hey ${userProfile.name.split(' ')[0]}! I'm your Pocket Copilot. I know your ${contacts.length} contacts, your daily tasks, and who's due for a follow-up. Ask me to draft messages, review contacts, or prep for meetings!`,
+    text: `Hey ${userProfile.name.split(' ')[0]}! I'm your AI Assistant. I know your ${contacts.length} contacts, your daily tasks, and who's due for a follow-up. Ask me to draft messages, review contacts, or prep for meetings!`,
     timestamp: 'Just now',
   });
   const [messages, setMessages] = useState<ChatMessage[]>([welcome()]);
@@ -41,7 +41,7 @@ export function AIChatView() {
     setInput('');
     setLoading(true);
     try {
-      const reply = await askCopilot(text, { userProfile, contacts, tasks });
+      const reply = await askAssistant(text, { userProfile, contacts, tasks });
       setMessages((m) => [...m, { id: `ast_${Date.now()}`, sender: 'assistant', text: reply, timestamp: 'Just now' }]);
     } catch {
       setMessages((m) => [...m, { id: `err_${Date.now()}`, sender: 'assistant', text: "Sorry, I couldn't reach the AI service.", timestamp: 'Just now' }]);
@@ -64,7 +64,7 @@ export function AIChatView() {
             <Sparkles size={16} color={c.white} />
           </View>
           <View>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>Pocket AI Copilot</Text>
+            <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>AI Assistant</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: c.emerald500 }} />
               <Text style={{ fontSize: 10, fontWeight: '500', color: c.emerald600 }}>CRM Enabled • Demo mode</Text>
@@ -102,7 +102,7 @@ export function AIChatView() {
         {loading && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 36 }}>
             <ActivityIndicator size="small" color={c.violet600} />
-            <Text style={{ fontSize: 12, color: c.slate400 }}>AI Copilot is thinking...</Text>
+            <Text style={{ fontSize: 12, color: c.slate400 }}>AI Assistant is thinking...</Text>
           </View>
         )}
       </ScrollView>

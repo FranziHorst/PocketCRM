@@ -27,7 +27,7 @@ export default function TabsLayout() {
         }}
       />
       <Tabs.Screen name="contacts" options={{ title: 'Contacts', headerShown: false, tabBarIcon: ({ color, size }) => <Users color={color} size={size} /> }} />
-      <Tabs.Screen name="aichat" options={{ title: 'AI Copilot', tabBarIcon: ({ color, size }) => <MessageSquareCode color={color} size={size} /> }} />
+      <Tabs.Screen name="aichat" options={{ title: 'AI Assistant', tabBarIcon: ({ color, size }) => <MessageSquareCode color={color} size={size} /> }} />
       <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} /> }} />
     </Tabs>
   );
