@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { ActivityIndicator, Alert, Platform, Pressable, Switch, Text, TextInput, View } from 'react-native';
-import { Camera, FileDown, Plus, RefreshCw, Trash2, X } from 'lucide-react-native';
+import { Camera, ExternalLink, FileDown, Plus, RefreshCw, Trash2, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { UserProfile } from '../../types';
 import { isCalendarEvent } from '../calendar';
@@ -8,7 +8,7 @@ import { exportContactsCsv } from '../csv';
 import { buildContactCard } from '../contactCard';
 import { c, r, t, font } from '../theme';
 import { QrCode } from './QrCode';
-import { Avatar, Btn, Field, Group, PageTitle, Row, SocialIcon, TextBtn } from './ui';
+import { Avatar, Btn, Field, Group, PageTitle, Row, SocialGlyph, TextBtn, displayLink, openLink, socialLabel } from './ui';
 
 const Label = ({ children }: { children: React.ReactNode }) => (
   <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.textSecondary, marginBottom: 8, marginLeft: 4 }}>{children}</Text>
@@ -147,9 +147,20 @@ export function ProfileView() {
       {socials.length > 0 ? (
         <View>
           <Label>Profiles</Label>
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 4 }}>
-            {socials.map((k) => <SocialIcon key={k} kind={k} url={sl[k]!} withLabel />)}
-          </View>
+          <Group>
+            {socials.map((k, i) => (
+              <Row key={k} first={i === 0} onPress={() => openLink(sl[k]!)}>
+                <View style={{ width: 34, height: 34, borderRadius: 10, backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, alignItems: 'center', justifyContent: 'center' }}>
+                  <SocialGlyph kind={k} size={17} />
+                </View>
+                <View style={{ flex: 1 }}>
+                  <Text style={t.body}>{socialLabel(k)}</Text>
+                  <Text style={t.caption} numberOfLines={1}>{displayLink(sl[k]!)}</Text>
+                </View>
+                <ExternalLink size={16} color={c.textMuted} />
+              </Row>
+            ))}
+          </Group>
         </View>
       ) : null}
 

@@ -4,6 +4,7 @@ import {
   StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react-native';
+import Svg, { Path } from 'react-native-svg';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { avatarBg, BadgeColors, c, r, t, font } from '../theme';
 
@@ -93,26 +94,62 @@ export const SectionTitle = ({ icon, children, right }: { icon?: React.ReactNode
   </View>
 );
 
-// Marken-Icons gibt es in lucide 1.x nicht mehr → kleine Buchstaben-Badges.
-export const SocialIcon = ({ kind, url, withLabel }: { kind: 'linkedin' | 'twitter' | 'instagram' | 'website' | 'github'; url: string; withLabel?: boolean }) => {
-  const m = {
-    linkedin: { t: 'in', bg: c.surfaceSoft, fg: c.text2, label: 'LinkedIn' },
-    twitter: { t: 'X', bg: c.surfaceSoft, fg: c.text2, label: 'X' },
-    instagram: { t: 'IG', bg: c.surfaceSoft, fg: c.text2, label: 'Instagram' },
-    website: { t: 'www', bg: c.surfaceSoft, fg: c.text2, label: 'Website' },
-    github: { t: 'GH', bg: c.surfaceSoft, fg: c.text2, label: 'GitHub' },
-  }[kind];
-  return (
-    <Pressable onPress={() => openLink(url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: m.bg, borderWidth: 1, borderColor: c.border, borderRadius: r.full, paddingHorizontal: withLabel ? 10 : 8, paddingVertical: 5 }}>
-      <Text style={{ fontSize: 11, fontFamily: font.display, color: m.fg }}>{m.t}</Text>
-      {withLabel ? <Text style={{ fontSize: 11, fontFamily: font.medium, color: m.fg }}>{m.label}</Text> : null}
-    </Pressable>
-  );
+export type SocialKind = 'linkedin' | 'twitter' | 'instagram' | 'website' | 'github';
+
+// lucide 1.x liefert keine Marken-Icons mehr, also die Glyphen selbst zeichnen.
+// Pfade im 24er Raster, damit sie zu den lucide-Größen im Rest der App passen.
+const GLYPH: Record<SocialKind, { label: string; brand: string; path: string }> = {
+  linkedin: {
+    label: 'LinkedIn',
+    brand: '#0A66C2',
+    path: 'M20.45 20.45h-3.55v-5.57c0-1.33-.03-3.04-1.85-3.04-1.86 0-2.14 1.45-2.14 2.94v5.67H9.35V9h3.41v1.56h.05c.48-.9 1.64-1.85 3.37-1.85 3.6 0 4.27 2.37 4.27 5.46v6.28zM5.34 7.43a2.06 2.06 0 1 1 0-4.13 2.06 2.06 0 0 1 0 4.13zm1.78 13.02H3.55V9h3.57v11.45zM22.22 0H1.77C.79 0 0 .77 0 1.73v20.54C0 23.23.79 24 1.77 24h20.45c.98 0 1.78-.77 1.78-1.73V1.73C24 .77 23.2 0 22.22 0z',
+  },
+  twitter: {
+    label: 'X',
+    brand: '#000000',
+    path: 'M18.24 2.25h3.31l-7.23 8.26 8.5 11.24h-6.66l-5.21-6.82-5.97 6.82H1.68l7.73-8.84L1.25 2.25h6.83l4.71 6.23 5.45-6.23zm-1.16 17.52h1.83L7.08 4.13H5.12l11.96 15.64z',
+  },
+  instagram: {
+    label: 'Instagram',
+    brand: '#E4405F',
+    path: 'M12 2.16c3.2 0 3.58.01 4.85.07 1.17.05 1.8.25 2.23.41.56.22.96.48 1.38.9.42.42.68.82.9 1.38.16.42.36 1.06.41 2.23.06 1.27.07 1.65.07 4.85s-.01 3.58-.07 4.85c-.05 1.17-.25 1.8-.41 2.23a3.7 3.7 0 0 1-.9 1.38c-.42.42-.82.68-1.38.9-.42.16-1.06.36-2.23.41-1.27.06-1.65.07-4.85.07s-3.58-.01-4.85-.07c-1.17-.05-1.8-.25-2.23-.41a3.7 3.7 0 0 1-1.38-.9 3.7 3.7 0 0 1-.9-1.38c-.16-.42-.36-1.06-.41-2.23C2.17 15.58 2.16 15.2 2.16 12s.01-3.58.07-4.85c.05-1.17.25-1.8.41-2.23.22-.56.48-.96.9-1.38.42-.42.82-.68 1.38-.9.42-.16 1.06-.36 2.23-.41C8.42 2.17 8.8 2.16 12 2.16zM12 0C8.74 0 8.33.01 7.05.07 5.78.13 4.9.33 4.14.63c-.79.31-1.46.72-2.13 1.38S.94 3.35.63 4.14C.33 4.9.13 5.78.07 7.05.01 8.33 0 8.74 0 12s.01 3.67.07 4.95c.06 1.27.26 2.15.56 2.91.31.79.72 1.46 1.38 2.13.67.67 1.34 1.08 2.13 1.38.76.3 1.64.5 2.91.56C8.33 23.99 8.74 24 12 24s3.67-.01 4.95-.07c1.27-.06 2.15-.26 2.91-.56a5.9 5.9 0 0 0 2.13-1.38 5.9 5.9 0 0 0 1.38-2.13c.3-.76.5-1.64.56-2.91.06-1.28.07-1.69.07-4.95s-.01-3.67-.07-4.95c-.06-1.27-.26-2.15-.56-2.91a5.9 5.9 0 0 0-1.38-2.13A5.9 5.9 0 0 0 19.86.63c-.76-.3-1.64-.5-2.91-.56C15.67.01 15.26 0 12 0zm0 5.84a6.16 6.16 0 1 0 0 12.32 6.16 6.16 0 0 0 0-12.32zM12 16a4 4 0 1 1 0-8 4 4 0 0 1 0 8zm7.85-10.41a1.44 1.44 0 1 1-2.88 0 1.44 1.44 0 0 1 2.88 0z',
+  },
+  github: {
+    label: 'GitHub',
+    brand: '#181717',
+    path: 'M12 .3a12 12 0 0 0-3.79 23.4c.6.1.82-.26.82-.58l-.02-2.04c-3.34.73-4.04-1.6-4.04-1.6-.55-1.4-1.34-1.77-1.34-1.77-1.08-.74.09-.73.09-.73 1.2.08 1.83 1.24 1.83 1.24 1.07 1.83 2.81 1.3 3.5 1 .1-.78.42-1.31.76-1.61-2.67-.3-5.47-1.34-5.47-5.93 0-1.31.47-2.38 1.24-3.22-.13-.3-.54-1.52.11-3.18 0 0 1-.32 3.3 1.23a11.5 11.5 0 0 1 6 0c2.28-1.55 3.29-1.23 3.29-1.23.64 1.66.24 2.88.12 3.18.77.84 1.23 1.91 1.23 3.22 0 4.61-2.8 5.63-5.48 5.92.43.36.81 1.1.81 2.22l-.01 3.29c0 .31.21.69.82.57A12 12 0 0 0 12 .3z',
+  },
+  website: {
+    label: 'Website',
+    brand: '#4B5563',
+    // Globus: Kreis plus Meridian und Äquator.
+    path: 'M12 2a10 10 0 1 0 0 20 10 10 0 0 0 0-20zm0 1.8c1.4 0 3.1 2.7 3.5 7.3H8.5C8.9 6.5 10.6 3.8 12 3.8zM6.7 11.1c.2-2.5.9-4.6 1.9-6a8.2 8.2 0 0 0-4.6 6h2.7zm-2.7 1.8h2.7c.2 2.5.9 4.6 1.9 6a8.2 8.2 0 0 1-4.6-6zm4.5 0h7c-.4 4.6-2.1 7.3-3.5 7.3s-3.1-2.7-3.5-7.3zm8.8 0H20a8.2 8.2 0 0 1-4.6 6c1-1.4 1.7-3.5 1.9-6zm0-1.8c-.2-2.5-.9-4.6-1.9-6a8.2 8.2 0 0 1 4.6 6h-2.7z',
+  },
 };
+
+export const SocialGlyph = ({ kind, size = 18, color }: { kind: SocialKind; size?: number; color?: string }) => (
+  <Svg width={size} height={size} viewBox="0 0 24 24">
+    <Path d={GLYPH[kind].path} fill={color ?? GLYPH[kind].brand} />
+  </Svg>
+);
+
+export const socialLabel = (kind: SocialKind) => GLYPH[kind].label;
+
+export const SocialIcon = ({ kind, url, withLabel }: { kind: SocialKind; url: string; withLabel?: boolean }) => (
+  <Pressable onPress={() => openLink(url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.full, paddingHorizontal: withLabel ? 10 : 8, paddingVertical: 5 }}>
+    <SocialGlyph kind={kind} size={13} />
+    {withLabel ? <Text style={{ fontSize: 11, fontFamily: font.medium, color: c.text2 }}>{GLYPH[kind].label}</Text> : null}
+  </Pressable>
+);
 
 export function openLink(url: string) {
   const u = url.startsWith('http') ? url : url.startsWith('@') ? `https://x.com/${url.slice(1)}` : `https://${url}`;
   Linking.openURL(u).catch(() => {});
+}
+
+// Was im Profil unter dem Namen steht: ohne Protokoll und ohne Schrägstrich am Ende.
+export function displayLink(url: string): string {
+  return url.replace(/^https?:\/\//, '').replace(/^www\./, '').replace(/\/$/, '');
 }
 
 // confirm() gibt es nativ nicht; auf Web ist Alert.alert wirkungslos.
