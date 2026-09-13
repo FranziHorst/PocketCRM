@@ -15,11 +15,12 @@ export function DashboardView() {
 
   return (
     <View style={{ gap: 20 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: -6 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: -6 }}>
+        <Text style={{ fontSize: 16, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>Pocket</Text>
         <View style={{ width: 24, height: 24, borderRadius: 8, backgroundColor: c.accentDark, alignItems: 'center', justifyContent: 'center' }}>
           <Sparkles size={13} color={c.onDark} />
         </View>
-        <Text style={{ fontSize: 15, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>Pocket CRM</Text>
+        <Text style={{ fontSize: 16, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>CRM</Text>
       </View>
 
       <View style={{ backgroundColor: c.text, borderRadius: r.xxl, padding: 22, gap: 18 }}>
