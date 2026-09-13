@@ -1,10 +1,10 @@
 import React, { useState } from 'react';
 import { KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, View } from 'react-native';
 import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
-import { MessageSquare, Pencil, Sparkles, Trash2 } from 'lucide-react-native';
+import { MessageSquare, Sparkles, Trash2 } from 'lucide-react-native';
 import { useCrm } from '@/store';
 import { Contact } from '../../../../types';
-import { c, r, font } from '@/theme';
+import { c, t, font } from '@/theme';
 import { Avatar, Btn, confirmAsync } from '@/components/ui';
 import { ContactDetails } from '@/components/ContactDetails';
 import { ContactFields } from '@/components/ContactFields';
@@ -51,27 +51,24 @@ export default function ContactPage() {
             : <HeaderBtn label="Edit" onPress={startEdit} />),
         }}
       />
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 40, gap: 20 }} keyboardShouldPersistTaps="handled">
+      <ScrollView contentContainerStyle={{ padding: 20, paddingBottom: 40, gap: 22 }} keyboardShouldPersistTaps="handled">
         {editing && form ? (
           <ContactFields form={form} setForm={setForm} />
         ) : (
           <>
-            <View style={{ alignItems: 'center', gap: 8, paddingVertical: 8 }}>
-              <Avatar name={contact.name} color={contact.avatarColor} size={72} radius={24} />
-              <Text style={{ fontSize: 20, fontFamily: font.display, color: c.text, textAlign: 'center' }}>{contact.name}</Text>
+            <View style={{ alignItems: 'center', gap: 6, paddingTop: 4, paddingBottom: 8 }}>
+              <Avatar name={contact.name} color={contact.avatarColor} size={88} radius={28} />
+              <Text style={{ fontSize: 24, fontFamily: font.display, letterSpacing: -0.3, color: c.text, textAlign: 'center', marginTop: 6 }}>{contact.name}</Text>
               {(contact.role || contact.company) ? (
-                <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' , fontFamily: font.regular}}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
+                <Text style={[t.secondary, { textAlign: 'center' }]}>{[contact.role, contact.company].filter(Boolean).join(' at ')}</Text>
               ) : null}
-              <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                <Btn label="Ice breaker" variant="violet" icon={<Sparkles size={14} color={c.accentDark} />} onPress={() => askIceBreakerFor(contact)} />
-                <Btn label="Ask AI" variant="violet" icon={<MessageSquare size={14} color={c.accentDark} />} onPress={() => askAIForContact(contact)} />
-                <Btn label="Edit" variant="soft" icon={<Pencil size={14} color={c.accentDark} />} onPress={startEdit} />
+              <View style={{ flexDirection: 'row', gap: 8, marginTop: 12 }}>
+                <Btn label="Ice breaker" icon={<Sparkles size={15} color={c.onDark} />} onPress={() => askIceBreakerFor(contact)} />
+                <Btn label="Ask AI" variant="soft" icon={<MessageSquare size={15} color={c.accentDark} />} onPress={() => askAIForContact(contact)} />
               </View>
             </View>
 
-            <View style={{ backgroundColor: c.surface, borderRadius: r.xl, borderWidth: 1, borderColor: c.border, padding: 16 }}>
-              <ContactDetails contact={contact} />
-            </View>
+            <ContactDetails contact={contact} />
 
             <Pressable onPress={remove} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10 }}>
               <Trash2 size={14} color={c.danger} />
