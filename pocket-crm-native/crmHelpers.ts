@@ -101,6 +101,48 @@ export function calculateNextReminder(cadence: ReminderCadence, baseDate = new D
   return d.toISOString().split("T")[0];
 }
 
+export type DuplicateMatch = { contact: Contact; reason: string };
+
+const norm = (v?: string) => (v ?? "").trim().toLowerCase();
+const digitsOnly = (v?: string) => (v ?? "").replace(/\D/g, "");
+const profilePath = (url?: string) =>
+  norm(url).replace(/^https?:\/\//, "").replace(/^www\./, "").replace(/\/+$/, "");
+
+// Sortiert nach Aussagekraft: eine gleiche Mailadresse ist ein sicherer Treffer,
+// ein gleicher Name nur ein Verdacht. Deshalb entscheidet der Nutzer, nicht wir.
+export function findDuplicate(candidate: Contact, contacts: Contact[]): DuplicateMatch | undefined {
+  const others = contacts.filter((ct) => ct.id !== candidate.id);
+
+  const email = norm(candidate.email);
+  if (email) {
+    const hit = others.find((ct) => norm(ct.email) === email);
+    if (hit) return { contact: hit, reason: "same email address" };
+  }
+
+  const phone = digitsOnly(candidate.phone);
+  if (phone.length >= 6) {
+    const hit = others.find((ct) => digitsOnly(ct.phone) === phone);
+    if (hit) return { contact: hit, reason: "same phone number" };
+  }
+
+  const linkedin = profilePath(candidate.socialLinks?.linkedin);
+  if (linkedin) {
+    const hit = others.find((ct) => profilePath(ct.socialLinks?.linkedin) === linkedin);
+    if (hit) return { contact: hit, reason: "same LinkedIn profile" };
+  }
+
+  const name = norm(candidate.name);
+  if (name) {
+    const hit = others.find((ct) => norm(ct.name) === name);
+    if (hit) {
+      const company = norm(candidate.company);
+      return { contact: hit, reason: company && norm(hit.company) === company ? "same name and company" : "same name" };
+    }
+  }
+
+  return undefined;
+}
+
 // Format date nicely
 export function formatDate(dateString: string): string {
   if (!dateString) return "Never";
