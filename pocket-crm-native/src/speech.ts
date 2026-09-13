@@ -63,6 +63,8 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
   recognition.interimResults = true;
 
   let final = '';
+  let stoppedByUser = false;
+  let fatal = false;
 
   recognition.onresult = (event) => {
     let interim = '';
@@ -75,15 +77,22 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
   };
 
   recognition.onerror = (event) => {
-    // Kein Fehler für die Nutzerin: abort/no-speech passieren beim normalen Stoppen.
-    if (event.error === 'aborted') return;
+    // 'aborted' passiert beim Stoppen, 'no-speech' bei kurzen Sprechpausen - beides
+    // normal, onend startet die Erkennung in beiden Fällen automatisch neu.
+    if (event.error === 'aborted' || event.error === 'no-speech') return;
+    fatal = true;
     handlers.onError(messageFor(event.error));
   };
 
-  recognition.onend = () => handlers.onEnd();
+  recognition.onend = () => {
+    if (stoppedByUser || fatal) { handlers.onEnd(); return; }
+    // Chrome/Safari beenden die Session auch mit continuous=true nach jeder kurzen
+    // Pause; ohne Neustart hier geht alles danach Gesprochene verloren.
+    try { recognition.start(); } catch { handlers.onEnd(); }
+  };
 
   return {
-    start: () => recognition.start(),
-    stop: () => recognition.stop(),
+    start: () => { stoppedByUser = false; fatal = false; recognition.start(); },
+    stop: () => { stoppedByUser = true; recognition.stop(); },
   };
 }
