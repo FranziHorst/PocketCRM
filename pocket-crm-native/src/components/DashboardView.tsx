@@ -1,6 +1,6 @@
 import React from 'react';
-import { Pressable, Text, View } from 'react-native';
-import { CheckCircle2, Circle, Plus, Sparkles, X } from 'lucide-react-native';
+import { Image, Pressable, Text, View } from 'react-native';
+import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { getGreeting } from '../../crmHelpers';
 import { c, r, t, font, priorityColors } from '../theme';
@@ -17,9 +17,7 @@ export function DashboardView() {
     <View style={{ gap: 20 }}>
       <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, marginBottom: -6 }}>
         <Text style={{ fontSize: 16, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>Pocket</Text>
-        <View style={{ width: 24, height: 24, borderRadius: 8, backgroundColor: c.accentDark, alignItems: 'center', justifyContent: 'center' }}>
-          <Sparkles size={13} color={c.onDark} />
-        </View>
+        <Image source={require('../../assets/images/logo.png')} style={{ width: 22, height: 32 }} resizeMode="contain" />
         <Text style={{ fontSize: 16, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>CRM</Text>
       </View>
 
