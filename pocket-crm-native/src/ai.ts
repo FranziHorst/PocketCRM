@@ -99,7 +99,14 @@ function withArticle(role: string) { return /^[aeiou]/i.test(role) ? `an ${role}
 
 // TODO(KI): Platzhalter. Zieht die Kontaktfelder per Muster aus dem gesprochenen Text.
 // Später ersetzt die echte KI nur diese Funktion; die Signatur kann bleiben.
-export type ExtractedContact = { name: string; role: string; company: string; howWeMet: string; notes: string };
+export type ExtractedContact = {
+  name: string; role: string; company: string; howWeMet: string; notes: string;
+  // eventId: passendes bestehendes Event gefunden. newEventName: kein Match, aber ein
+  // Event wurde erwähnt und sollte neu angelegt werden (macht der Aufrufer, extractContact
+  // selbst veraendert keinen State).
+  eventId?: string;
+  newEventName?: string;
+};
 
 const ROLES = [
   'product designer', 'ux designer', 'ui designer', 'graphic designer', 'designer',
@@ -135,6 +142,10 @@ function titleCase(value: string): string {
   return value.replace(/\b[a-z]/g, (ch) => ch.toUpperCase());
 }
 
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+}
+
 function takeName(raw: string): string {
   const words: string[] = [];
   for (const word of raw.split(/\s+/)) {
@@ -164,9 +175,11 @@ function findCapitalizedName(text: string): string {
   return '';
 }
 
-export function extractContact(text: string): ExtractedContact {
+export function extractContact(text: string, events: CrmEvent[] = []): ExtractedContact {
   const notes = text.trim().replace(/\s+/g, ' ');
-  const out: ExtractedContact = { name: '', role: '', company: '', howWeMet: '', notes };
+  // Notes bekommen eine Zusammenfassung, nicht den vollen Rohtext - eine gesprochene
+  // Notiz ist meist unaufgeraeumter als getippte Notizen.
+  const out: ExtractedContact = { name: '', role: '', company: '', howWeMet: '', notes: summarizeNotes(notes, 220) };
   if (!notes) return out;
 
   const nameMatch = notes.match(
@@ -175,24 +188,55 @@ export function extractContact(text: string): ExtractedContact {
   if (nameMatch) out.name = takeName(nameMatch[1]);
   if (!out.name) out.name = findCapitalizedName(notes);
 
-  // Erst das Event herausziehen, damit „at the SaaStr conference“ nicht als Firma gilt.
+  // Erst das Event herausziehen, damit „at the SaaStr conference“ oder „at TechCrunch
+  // Disrupt“ nicht als Firma gilt. Zuerst gegen bereits angelegte Events matchen (die
+  // kennen wir sicher), erst danach mit den generischen Event-Woertern raten.
   let rest = notes;
-  const eventMatch = notes.match(new RegExp(`\\b(?:at|during)\\s+(?:(?:the|a|an)\\s+)?([^.,;]*?\\b(?:${EVENT_WORDS})\\b)`, 'i'));
-  if (eventMatch) {
-    out.howWeMet = titleCase(eventMatch[1].trim());
-    rest = notes.replace(eventMatch[0], ' ');
+  const existingEvent = events
+    .filter((e) => e.name && new RegExp(`\\b${escapeRegExp(e.name)}\\b`, 'i').test(notes))
+    .sort((a, b) => b.name.length - a.name.length)[0];
+  if (existingEvent) {
+    out.eventId = existingEvent.id;
+    out.howWeMet = existingEvent.name;
+    // "at/during (the/a/an)?" mit entfernen, sonst bleibt z.B. "the" als Firma haengen.
+    rest = notes.replace(new RegExp(`\\b(?:(?:at|during)\\s+(?:(?:the|a|an)\\s+)?)?${escapeRegExp(existingEvent.name)}`, 'i'), ' ');
+  } else {
+    const eventMatch = notes.match(new RegExp(`\\b(?:at|during)\\s+(?:(?:the|a|an)\\s+)?([^.,;]*?\\b(?:${EVENT_WORDS})\\b)`, 'i'));
+    if (eventMatch) {
+      const name = titleCase(eventMatch[1].trim());
+      out.newEventName = name;
+      out.howWeMet = name;
+      rest = notes.replace(eventMatch[0], ' ');
+    }
   }
 
   const roleMatch = rest.match(new RegExp(`\\b((?:senior|junior|lead|principal|staff|head of|chief)\\s+)?(${ROLES.join('|')})\\b`, 'i'));
   if (roleMatch) out.role = titleCase(`${roleMatch[1] ?? ''}${roleMatch[2]}`.trim());
 
-  const companyMatch = rest.match(/\b(?:works?|working)?\s*(?:at|for|from)\s+([^.,;]+)/i);
+  // An ein Rollen-/Arbeits-Wort gebunden ("founder at X", "works at X"), damit ein
+  // bloßes "met her at X" (X = Ort/Event) nicht faelschlich als Firma gilt.
+  const companyMatch = rest.match(new RegExp(`\\b(?:${ROLES.join('|')}|works?|working)\\s+(?:at|for|from)\\s+([^.,;]+)`, 'i'));
   if (companyMatch) {
     const words = companyMatch[1].trim().split(/\s+/).slice(0, 3);
     const stopAt = words.findIndex((w) => /^(and|but|she|he|they|we|who|which|last|this|about|on|in|as)$/i.test(w));
     const picked = (stopAt === -1 ? words : words.slice(0, stopAt)).join(' ');
     const isJunk = COMPANY_REJECT.has(picked.toLowerCase()) || new RegExp(EVENT_WORDS, 'i').test(picked);
-    if (picked && !isJunk) out.company = titleCase(picked);
+    if (picked && !isJunk) {
+      out.company = titleCase(picked);
+      rest = rest.replace(companyMatch[0], ' ');
+    }
+  }
+
+  // Letzter Fallback fuer ein neues Event ohne generisches Event-Wort ("met her at
+  // TechCrunch Disrupt"): eine großgeschriebene Wortfolge nach "at/during", wenn vorher
+  // im Satz ein Kennenlern-Wort stand. Firma ist an dieser Stelle schon entfernt.
+  if (!existingEvent && !out.newEventName && /\b(?:met|ran into|bumped into|talked to|spoke to|spoke with|saw|caught up with)\b/i.test(rest)) {
+    const looseEventMatch = rest.match(/\b(?:at|during)\s+(?:(?:the|a|an)\s+)?([A-Z][A-Za-z'’-]*(?:\s+[A-Z][A-Za-z'’-]*){0,3})/);
+    if (looseEventMatch) {
+      const name = titleCase(looseEventMatch[1].trim());
+      out.newEventName = name;
+      out.howWeMet = name;
+    }
   }
 
   if (!out.howWeMet) out.howWeMet = 'Captured by voice note';
