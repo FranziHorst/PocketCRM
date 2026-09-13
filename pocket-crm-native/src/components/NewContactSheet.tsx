@@ -21,9 +21,12 @@ function Sheet({ initial, onClose }: { initial: Contact; onClose: () => void }) 
   const [form, setForm] = useState<Contact>({ ...initial, socialLinks: { ...initial.socialLinks } });
   const duplicate = useMemo(() => findDuplicate(form, contacts), [form, contacts]);
 
+  // withAnchor: die Kontaktliste liegt unter der Detailseite, auch wenn der Sheet vom
+  // Home-Tab aus geoeffnet wurde - sonst gibt es kein Zurueck und der Contacts-Tab
+  // zeigt nur diesen einen Kontakt.
   const open = (id: string) => {
     onClose();
-    router.push(`/(tabs)/contacts/${id}`);
+    router.push(`/(tabs)/contacts/${id}`, { withAnchor: true });
   };
 
   const add = () => {

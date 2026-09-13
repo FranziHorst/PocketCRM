@@ -1,6 +1,11 @@
 import { Stack } from 'expo-router';
 import { c, font } from '@/theme';
 
+// Wird ein Kontakt direkt geoeffnet (z.B. nach Speak to AI vom Home-Tab aus), liegt
+// sonst nur die Detailseite im Stack: kein Zurueck-Pfeil, und der Contacts-Tab zeigt
+// statt der Liste weiter diesen einen Kontakt. So liegt die Liste immer darunter.
+export const unstable_settings = { initialRouteName: 'index' };
+
 export default function ContactsStack() {
   return (
     <Stack
