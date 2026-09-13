@@ -63,6 +63,7 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
   recognition.interimResults = true;
 
   let final = '';
+  let lastInterim = '';
   let stoppedByUser = false;
   let fatal = false;
 
@@ -73,6 +74,7 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
       if (result.isFinal) final += `${result[0].transcript} `;
       else interim += result[0].transcript;
     }
+    lastInterim = interim;
     handlers.onTranscript(final.trim(), interim.trim());
   };
 
@@ -86,9 +88,19 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
 
   recognition.onend = () => {
     if (stoppedByUser || fatal) { handlers.onEnd(); return; }
+    // Ein Satz, der beim Sitzungsende noch nicht als "final" bestätigt war, würde
+    // sonst stillschweigend verworfen - lieber übernehmen als verlieren.
+    if (lastInterim) {
+      final += `${lastInterim} `;
+      lastInterim = '';
+      handlers.onTranscript(final.trim(), '');
+    }
     // Chrome/Safari beenden die Session auch mit continuous=true nach jeder kurzen
-    // Pause; ohne Neustart hier geht alles danach Gesprochene verloren.
-    try { recognition.start(); } catch { handlers.onEnd(); }
+    // Pause. Sofortiges Neustarten kann "already started" werfen, wodurch die
+    // Erkennung erneut lautlos stehen bleibt - daher erst kurz verzögert neu starten.
+    setTimeout(() => {
+      try { recognition.start(); } catch { handlers.onEnd(); }
+    }, 250);
   };
 
   return {
