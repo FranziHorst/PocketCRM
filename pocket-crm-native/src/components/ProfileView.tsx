@@ -1,8 +1,9 @@
 import React, { useState } from 'react';
-import { Alert, Platform, Pressable, Switch, Text, TextInput, View } from 'react-native';
-import { Camera, FileDown, Plus, Trash2, X } from 'lucide-react-native';
+import { ActivityIndicator, Alert, Platform, Pressable, Switch, Text, TextInput, View } from 'react-native';
+import { Camera, FileDown, Plus, RefreshCw, Trash2, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { UserProfile } from '../../types';
+import { isCalendarEvent } from '../calendar';
 import { exportContactsCsv } from '../csv';
 import { buildContactCard } from '../contactCard';
 import { c, r, t, font } from '../theme';
@@ -14,7 +15,7 @@ const Label = ({ children }: { children: React.ReactNode }) => (
 );
 
 export function ProfileView() {
-  const { userProfile, contacts, events, updateProfile, calendarSync, setCalendarSync } = useCrm();
+  const { userProfile, contacts, events, updateProfile, calendarSync, calendarSyncedAt, calendarSyncing, setCalendarSync, refreshCalendar } = useCrm();
   const [editing, setEditing] = useState(false);
   const [form, setForm] = useState<UserProfile>(userProfile);
   const [editingGoals, setEditingGoals] = useState(false);
@@ -45,6 +46,24 @@ export function ProfileView() {
       notify('Photo picker is not available in this build yet. Rebuild the app shell to enable it.');
     }
   };
+
+  const toggleCalendar = async (on: boolean) => {
+    const res = await setCalendarSync(on);
+    if (res.ok) return;
+    notify(res.reason === 'denied'
+      ? 'Calendar access was declined. You can allow it under Settings > Pocket CRM > Calendars.'
+      : 'Calendar access is not available in this build yet. Rebuild the app shell to enable it.');
+  };
+
+  const calendarEventCount = events.filter(isCalendarEvent).length;
+  const calendarStatus = calendarSyncing
+    ? 'Reading your calendar…'
+    : calendarSync
+      ? "New contacts are linked to the event you're at."
+      : "Off. Turn on to link new contacts to the event you're at.";
+  const syncedLabel = calendarSyncedAt
+    ? new Date(calendarSyncedAt).toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' })
+    : null;
 
   const sl = userProfile.socialLinks || {};
   const socials = (['linkedin', 'twitter', 'instagram', 'website', 'github'] as const).filter((k) => sl[k]);
@@ -178,10 +197,21 @@ export function ProfileView() {
           <Row first>
             <View style={{ flex: 1 }}>
               <Text style={t.body}>Calendar sync</Text>
-              <Text style={t.caption}>Coming soon. Links new contacts to the event you're at.</Text>
+              <Text style={t.caption}>{calendarStatus}</Text>
             </View>
-            <Switch value={calendarSync} onValueChange={setCalendarSync} trackColor={{ true: c.accentDark, false: c.border }} thumbColor={c.surface} />
+            {calendarSyncing
+              ? <ActivityIndicator color={c.accentDark} />
+              : <Switch value={calendarSync} onValueChange={toggleCalendar} trackColor={{ true: c.accentDark, false: c.border }} thumbColor={c.surface} />}
           </Row>
+          {calendarSync ? (
+            <Row onPress={() => { refreshCalendar().catch(() => {}); }}>
+              <View style={{ flex: 1 }}>
+                <Text style={[t.body, { color: c.accentDark }]}>Refresh calendar</Text>
+                <Text style={t.caption}>{calendarEventCount} {calendarEventCount === 1 ? 'event' : 'events'} from your phone{syncedLabel ? ` · synced ${syncedLabel}` : ''}</Text>
+              </View>
+              <RefreshCw size={18} color={c.accentDark} />
+            </Row>
+          ) : null}
           <Row onPress={() => exportContactsCsv(contacts, events).catch(() => {})}>
             <View style={{ flex: 1 }}>
               <Text style={[t.body, { color: c.accentDark }]}>Export contacts as CSV</Text>

@@ -4,6 +4,7 @@ import { router } from 'expo-router';
 import { UserProfile, Contact, DailyTask, AppNotification, CrmEvent } from '../types';
 import { initialUserProfile, initialContacts, initialDailyTasks, initialNotifications, initialEvents } from '../mockData';
 import { calculateNextReminder } from '../crmHelpers';
+import { CalendarSyncResult, isCalendarEvent, loadDeviceEvents } from './calendar';
 
 const KEYS = {
   profile: 'pocket_crm_user_profile',
@@ -15,7 +16,7 @@ const KEYS = {
 } as const;
 
 export type ContactsGrouping = 'recent' | 'events' | 'az';
-type Settings = { calendarSync: boolean; contactsGrouping: ContactsGrouping };
+type Settings = { calendarSync: boolean; calendarSyncedAt?: string; contactsGrouping: ContactsGrouping };
 const defaultSettings: Settings = { calendarSync: false, contactsGrouping: 'recent' };
 
 function todayStr() { return new Date().toISOString().split('T')[0]; }
@@ -37,7 +38,10 @@ type Store = {
   events: CrmEvent[];
   currentEvent?: CrmEvent;
   calendarSync: boolean;
-  setCalendarSync: (on: boolean) => void;
+  calendarSyncedAt?: string;
+  calendarSyncing: boolean;
+  setCalendarSync: (on: boolean) => Promise<CalendarSyncResult>;
+  refreshCalendar: () => Promise<CalendarSyncResult>;
   contactsGrouping: ContactsGrouping;
   setContactsGrouping: (g: ContactsGrouping) => void;
   pendingCount: number;
@@ -79,6 +83,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [notifications, setNotifications] = useState<AppNotification[]>(initialNotifications);
   const [events, setEvents] = useState<CrmEvent[]>(initialEvents);
   const [settings, setSettings] = useState<Settings>(defaultSettings);
+  const [calendarSyncing, setCalendarSyncing] = useState(false);
 
   const [newContact, setNewContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
@@ -147,6 +152,36 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const dismissNotification = (id: string) => setNotifications((prev) => prev.filter((n) => n.id !== id));
   const updateProfile = (profile: UserProfile) => setUserProfile(profile);
 
+  // Device events go first so currentEvent prefers a real appointment over a seeded one.
+  const applyDeviceEvents = (deviceEvents: CrmEvent[]) =>
+    setEvents((prev) => [...deviceEvents, ...prev.filter((e) => !isCalendarEvent(e))]);
+
+  const refreshCalendar = async (): Promise<CalendarSyncResult> => {
+    setCalendarSyncing(true);
+    try {
+      const res = await loadDeviceEvents();
+      if (res.ok) {
+        applyDeviceEvents(res.events);
+        setSettings((x) => ({ ...x, calendarSync: true, calendarSyncedAt: new Date().toISOString() }));
+      }
+      return res;
+    } finally {
+      setCalendarSyncing(false);
+    }
+  };
+
+  const setCalendarSync = async (on: boolean): Promise<CalendarSyncResult> => {
+    if (on) return refreshCalendar();
+    setEvents((prev) => prev.filter((e) => !isCalendarEvent(e)));
+    setSettings((x) => ({ ...x, calendarSync: false, calendarSyncedAt: undefined }));
+    return { ok: true, events: [] };
+  };
+
+  useEffect(() => {
+    if (!ready || !settings.calendarSync) return;
+    loadDeviceEvents().then((res) => { if (res.ok) applyDeviceEvents(res.events); });
+  }, [ready]);
+
   const closeAddContact = () => setNewContact(null);
   const openAddContact = (prefill: Partial<Contact> = {}) =>
     setNewContact({
@@ -187,7 +222,8 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const value: Store = {
     ready, userProfile, contacts, tasks, notifications, events, currentEvent, pendingCount, unreadCount,
     calendarSync: settings.calendarSync,
-    setCalendarSync: (on) => setSettings((x) => ({ ...x, calendarSync: on })),
+    calendarSyncedAt: settings.calendarSyncedAt,
+    calendarSyncing, setCalendarSync, refreshCalendar,
     contactsGrouping: settings.contactsGrouping,
     setContactsGrouping: (g) => setSettings((x) => ({ ...x, contactsGrouping: g })),
     toggleTask, addTask, saveContact, deleteContact,
