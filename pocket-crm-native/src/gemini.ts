@@ -5,7 +5,7 @@
 
 const SITE_ORIGIN = process.env.EXPO_PUBLIC_SITE_ORIGIN ?? 'https://pocketcrm-ai-hackathon.netlify.app';
 const PROXY_URL = `${SITE_ORIGIN}/.netlify/functions/gemini`;
-const MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-2.5-flash';
+const MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-3.6-flash';
 
 // The key lives on the server now, not in this build - whether AI actually
 // answers depends on the deploy having GEMINI_API_KEY set, not on this client.

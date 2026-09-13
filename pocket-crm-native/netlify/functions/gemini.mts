@@ -38,7 +38,7 @@ export default async (req: Request): Promise<Response> => {
 
   const { model, ...body } = payload as { model?: string; [k: string]: unknown };
   const url = `https://generativelanguage.googleapis.com/v1beta/models/${encodeURIComponent(
-    model || 'gemini-2.5-flash'
+    model || 'gemini-3.6-flash'
   )}:generateContent?key=${encodeURIComponent(key)}`;
 
   try {
