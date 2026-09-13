@@ -3,22 +3,29 @@ import { Pressable, Text, TextInput, View } from 'react-native';
 import { Mic, Square } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { extractContact } from '../ai';
+import type { CrmEvent } from '../../types';
 import { createRecognizer, isSpeechSupported, unsupportedReason, type Recognizer } from '../speech';
 import { c, r, font } from '../theme';
 import { Btn, Label, ModalShell } from './ui';
 
 export function SpeakToAIModal() {
-  const { isSpeakOpen, setSpeakOpen, openAddContact } = useCrm();
+  const { isSpeakOpen, setSpeakOpen, openAddContact, events, addManualEvent } = useCrm();
   if (!isSpeakOpen) return null;
   return (
     <SpeakSheet
+      events={events}
       onClose={() => setSpeakOpen(false)}
-      onResult={(prefill) => { setSpeakOpen(false); openAddContact(prefill); }}
+      onResult={(text) => {
+        const extracted = extractContact(text, events);
+        const eventId = extracted.eventId ?? (extracted.newEventName ? addManualEvent(extracted.newEventName).id : undefined);
+        setSpeakOpen(false);
+        openAddContact({ name: extracted.name, role: extracted.role, company: extracted.company, howWeMet: extracted.howWeMet, notes: extracted.notes, eventId });
+      }}
     />
   );
 }
 
-function SpeakSheet({ onClose, onResult }: { onClose: () => void; onResult: (prefill: Parameters<ReturnType<typeof useCrm>['openAddContact']>[0]) => void }) {
+function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose: () => void; onResult: (text: string) => void }) {
   const supported = isSpeechSupported();
   const [listening, setListening] = useState(false);
   const [text, setText] = useState('');
@@ -51,7 +58,7 @@ function SpeakSheet({ onClose, onResult }: { onClose: () => void; onResult: (pre
     }
   };
 
-  const preview = extractContact(text);
+  const preview = extractContact(text, events);
   const fields: { label: string; value: string }[] = [
     { label: 'Name', value: preview.name },
     { label: 'Role', value: preview.role },
@@ -70,7 +77,7 @@ function SpeakSheet({ onClose, onResult }: { onClose: () => void; onResult: (pre
       footer={
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
           <Btn label="Cancel" variant="ghost" onPress={onClose} />
-          <Btn label="Continue" onPress={() => onResult(extractContact(text))} disabled={!text.trim()} />
+          <Btn label="Continue" onPress={() => onResult(text)} disabled={!text.trim()} />
         </View>
       }>
       <View style={{ gap: 16 }}>

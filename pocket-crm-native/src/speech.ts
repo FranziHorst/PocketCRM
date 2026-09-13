@@ -58,11 +58,17 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
   if (!Ctor) return null;
 
   const recognition = new Ctor();
-  recognition.lang = 'en-US';
+  // Browser-Sprache nutzen statt fest Englisch - sonst presst die Erkennung z.B.
+  // gesprochenes Deutsch in aehnlich klingende englische Woerter statt es korrekt
+  // zu verstehen.
+  recognition.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
   recognition.continuous = true;
   recognition.interimResults = true;
 
   let final = '';
+  let lastInterim = '';
+  let stoppedByUser = false;
+  let fatal = false;
 
   recognition.onresult = (event) => {
     let interim = '';
@@ -71,19 +77,37 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
       if (result.isFinal) final += `${result[0].transcript} `;
       else interim += result[0].transcript;
     }
+    lastInterim = interim;
     handlers.onTranscript(final.trim(), interim.trim());
   };
 
   recognition.onerror = (event) => {
-    // Kein Fehler für die Nutzerin: abort/no-speech passieren beim normalen Stoppen.
-    if (event.error === 'aborted') return;
+    // 'aborted' passiert beim Stoppen, 'no-speech' bei kurzen Sprechpausen - beides
+    // normal, onend startet die Erkennung in beiden Fällen automatisch neu.
+    if (event.error === 'aborted' || event.error === 'no-speech') return;
+    fatal = true;
     handlers.onError(messageFor(event.error));
   };
 
-  recognition.onend = () => handlers.onEnd();
+  recognition.onend = () => {
+    if (stoppedByUser || fatal) { handlers.onEnd(); return; }
+    // Ein Satz, der beim Sitzungsende noch nicht als "final" bestätigt war, würde
+    // sonst stillschweigend verworfen - lieber übernehmen als verlieren.
+    if (lastInterim) {
+      final += `${lastInterim} `;
+      lastInterim = '';
+      handlers.onTranscript(final.trim(), '');
+    }
+    // Chrome/Safari beenden die Session auch mit continuous=true nach jeder kurzen
+    // Pause. Sofortiges Neustarten kann "already started" werfen, wodurch die
+    // Erkennung erneut lautlos stehen bleibt - daher erst kurz verzögert neu starten.
+    setTimeout(() => {
+      try { recognition.start(); } catch { handlers.onEnd(); }
+    }, 250);
+  };
 
   return {
-    start: () => recognition.start(),
-    stop: () => recognition.stop(),
+    start: () => { stoppedByUser = false; fatal = false; recognition.start(); },
+    stop: () => { stoppedByUser = true; recognition.stop(); },
   };
 }

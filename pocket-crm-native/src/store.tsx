@@ -37,6 +37,7 @@ type Store = {
   notifications: AppNotification[];
   events: CrmEvent[];
   currentEvent?: CrmEvent;
+  addManualEvent: (name: string) => CrmEvent;
   calendarSync: boolean;
   calendarSyncedAt?: string;
   calendarSyncing: boolean;
@@ -182,6 +183,13 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     loadDeviceEvents().then((res) => { if (res.ok) applyDeviceEvents(res.events); });
   }, [ready]);
 
+  // Fuer Speak to AI: ein per Sprache genanntes, noch unbekanntes Event anlegen.
+  const addManualEvent = (name: string): CrmEvent => {
+    const event: CrmEvent = { id: `evt_${Date.now()}`, name, startDate: todayStr(), source: 'manual' };
+    setEvents((prev) => [event, ...prev]);
+    return event;
+  };
+
   const closeAddContact = () => setNewContact(null);
   const openAddContact = (prefill: Partial<Contact> = {}) =>
     setNewContact({
@@ -220,7 +228,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const clearIceBreakerRequest = () => setIceBreakerContactId(null);
 
   const value: Store = {
-    ready, userProfile, contacts, tasks, notifications, events, currentEvent, pendingCount, unreadCount,
+    ready, userProfile, contacts, tasks, notifications, events, currentEvent, addManualEvent, pendingCount, unreadCount,
     calendarSync: settings.calendarSync,
     calendarSyncedAt: settings.calendarSyncedAt,
     calendarSyncing, setCalendarSync, refreshCalendar,
