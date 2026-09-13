@@ -2,7 +2,7 @@ import React from 'react';
 import { Alert, Platform, Pressable, Text, View } from 'react-native';
 import { Mic, QrCode } from 'lucide-react-native';
 import { useCrm } from '../store';
-import { c, r } from '../theme';
+import { c, r, font } from '../theme';
 
 export function AddContactCard() {
   const { setScanOpen } = useCrm();
@@ -16,7 +16,7 @@ export function AddContactCard() {
   return (
     <View style={{ backgroundColor: c.accent, borderRadius: r.xxl, padding: 20, gap: 16 }}>
       <View style={{ gap: 4 }}>
-        <Text style={{ fontSize: 20, fontWeight: '700', letterSpacing: -0.4, color: c.text }}>Just met someone?</Text>
+        <Text style={{ fontSize: 21, fontFamily: font.display, letterSpacing: -0.3, color: c.text }}>Just met someone?</Text>
         <Text style={{ fontSize: 14, color: c.text2, lineHeight: 20 }}>Capture them before the details fade.</Text>
       </View>
       <View style={{ flexDirection: 'row', gap: 10 }}>

@@ -3,7 +3,7 @@ import { Pressable, Text, View } from 'react-native';
 import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { getGreeting } from '../../crmHelpers';
-import { c, r, t, priorityColors } from '../theme';
+import { c, r, t, font, priorityColors } from '../theme';
 import { Badge, Group, Row, SectionHeader, TextBtn } from './ui';
 import { AddContactCard } from './AddContactCard';
 
@@ -17,7 +17,7 @@ export function DashboardView() {
     <View style={{ gap: 20 }}>
       <View style={{ backgroundColor: c.text, borderRadius: r.xxl, padding: 22, gap: 18 }}>
         <View style={{ gap: 4 }}>
-          <Text style={{ fontSize: 26, fontWeight: '700', letterSpacing: -0.5, color: c.onDark }}>{greeting.text.replace(/!$/, '')}</Text>
+          <Text style={{ fontSize: 27, fontFamily: font.display, letterSpacing: -0.4, color: c.onDark }}>{greeting.text.replace(/!$/, '')}</Text>
           <Text style={{ fontSize: 14, color: c.onDarkSoft, lineHeight: 20 }}>{greeting.subtext}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
@@ -79,7 +79,7 @@ export function DashboardView() {
 function Stat({ value, label }: { value: number; label: string }) {
   return (
     <View style={{ flex: 1, backgroundColor: 'rgba(253,251,247,0.08)', borderRadius: r.xl, paddingVertical: 12, paddingHorizontal: 14, gap: 2 }}>
-      <Text style={{ fontSize: 26, fontWeight: '700', letterSpacing: -0.8, color: c.onDark }}>{value}</Text>
+      <Text style={{ fontSize: 28, fontFamily: font.display, letterSpacing: -0.6, color: c.onDark }}>{value}</Text>
       <Text style={{ fontSize: 12, fontWeight: '500', color: c.onDarkSoft }}>{label}</Text>
     </View>
   );
