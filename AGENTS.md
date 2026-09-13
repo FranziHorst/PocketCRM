@@ -46,11 +46,11 @@ Baut ein Feature auf einem Branch auf, der noch nicht in `main` ist, dann:
 - Natives Modul für Sprache (z. B. `expo-speech-recognition`) nur mit `npx expo install`; danach braucht der iOS-Simulator einen Neubau (`npx expo prebuild -p ios --clean`, `pod install`), siehe README
 
 **Assistent – wo der Code hingehört**
-- `src/gemini.ts`: reiner Transport (REST zu Gemini). Function Calling und Websuche gehen nie im selben Request – das ist eine API-Vorgabe, nicht unsere Wahl.
+- `src/gemini.ts`: reiner Transport, ruft aber nicht Gemini direkt – sondern unsere eigene Netlify Function `netlify/functions/gemini.mts`, die den echten Key serverseitig anhängt (`GEMINI_API_KEY`, ohne `EXPO_PUBLIC_`-Prefix, im Netlify-Dashboard gesetzt). So landet der Key nie im ausgelieferten Bundle. Function Calling und Websuche gehen nie im selben Request – das ist eine API-Vorgabe, nicht unsere Wahl.
 - `src/assistant.ts`: Werkzeuge und Schleife. Lesende Werkzeuge laufen automatisch, schreibende geben eine `AssistantAction` zurück und beenden den Zug.
 - Der Assistent schreibt nie selbst in den Store. `AIChatView` zeigt eine Karte, erst „Save“ ruft `saveContact` / `addTask` / `toggleTask`.
 - Löschen ist absichtlich kein Werkzeug.
-- Ohne `EXPO_PUBLIC_GEMINI_API_KEY` läuft der Demo-Modus in `src/ai.ts` weiter. Beide Wege müssen funktionieren.
+- Ob es echte Antworten statt Demo-Modus gibt, hängt am Server (ist `GEMINI_API_KEY` bei Netlify gesetzt?), nicht mehr an einer Client-Umgebungsvariable. Beide Wege müssen funktionieren.
 
 ## Regeln für Änderungen
 

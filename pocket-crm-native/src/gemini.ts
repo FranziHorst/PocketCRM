@@ -1,13 +1,16 @@
-// Direct REST calls instead of a Google SDK: the SDKs pull in Node polyfills
-// that Metro does not resolve, and we only need two endpoints.
+// Calls go through our own Netlify Function (netlify/functions/gemini.mts)
+// instead of Google directly, so the real API key stays server-side and is
+// never part of the app bundle. Direct REST there too (no SDK): SDKs pull in
+// Node polyfills that Metro does not resolve.
 
-const API = 'https://generativelanguage.googleapis.com/v1beta/models';
-
-const KEY = process.env.EXPO_PUBLIC_GEMINI_API_KEY ?? '';
+const SITE_ORIGIN = process.env.EXPO_PUBLIC_SITE_ORIGIN ?? 'https://pocketcrm-ai-hackathon.netlify.app';
+const PROXY_URL = `${SITE_ORIGIN}/.netlify/functions/gemini`;
 const MODEL = process.env.EXPO_PUBLIC_GEMINI_MODEL ?? 'gemini-2.5-flash';
 
+// The key lives on the server now, not in this build - whether AI actually
+// answers depends on the deploy having GEMINI_API_KEY set, not on this client.
 export function geminiConfigured(): boolean {
-  return KEY.length > 0;
+  return true;
 }
 
 export type GeminiPart =
@@ -45,16 +48,15 @@ export class GeminiError extends Error {}
 // Grounding and function declarations cannot be combined in one request, so
 // callers pick one: the assistant loop declares functions, search_web grounds.
 async function call(opts: RequestOptions): Promise<GeminiResult> {
-  if (!KEY) throw new GeminiError('No API key configured.');
-
   const tools: Record<string, unknown>[] = [];
   if (opts.webSearch) tools.push({ google_search: {} });
   else if (opts.functions?.length) tools.push({ functionDeclarations: opts.functions });
 
-  const res = await fetch(`${API}/${MODEL}:generateContent?key=${encodeURIComponent(KEY)}`, {
+  const res = await fetch(PROXY_URL, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify({
+      model: MODEL,
       contents: opts.contents,
       ...(opts.systemInstruction ? { systemInstruction: { parts: [{ text: opts.systemInstruction }] } } : {}),
       ...(tools.length ? { tools } : {}),
