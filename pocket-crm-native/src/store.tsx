@@ -55,6 +55,8 @@ type Store = {
   closeAddContact: () => void;
   isScanOpen: boolean;
   setScanOpen: (open: boolean) => void;
+  isSpeakOpen: boolean;
+  setSpeakOpen: (open: boolean) => void;
   isAddTaskOpen: boolean;
   setAddTaskOpen: (open: boolean) => void;
 
@@ -81,6 +83,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
   const [newContact, setNewContact] = useState<Contact | null>(null);
   const [isAddTaskOpen, setAddTaskOpen] = useState(false);
   const [isScanOpen, setScanOpen] = useState(false);
+  const [isSpeakOpen, setSpeakOpen] = useState(false);
   const [chatPrefilledPrompt, setChatPrefilledPrompt] = useState('');
   const [iceBreakerContactId, setIceBreakerContactId] = useState<string | null>(null);
 
@@ -190,7 +193,7 @@ export function CrmProvider({ children }: { children: React.ReactNode }) {
     toggleTask, addTask, saveContact, deleteContact,
     dismissNotification, updateProfile,
     newContact, openAddContact, closeAddContact,
-    isAddTaskOpen, setAddTaskOpen, isScanOpen, setScanOpen,
+    isAddTaskOpen, setAddTaskOpen, isScanOpen, setScanOpen, isSpeakOpen, setSpeakOpen,
     chatPrefilledPrompt, clearPrefilledPrompt, askAIWithPrompt, askAIForContact,
     iceBreakerContactId, askIceBreakerFor, clearIceBreakerRequest,
   };

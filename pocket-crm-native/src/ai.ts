@@ -97,6 +97,83 @@ export function iceBreakersFor(contact: Contact, events: CrmEvent[], seed = 0): 
 
 function withArticle(role: string) { return /^[aeiou]/i.test(role) ? `an ${role}` : `a ${role}`; }
 
+// TODO(KI): Platzhalter. Zieht die Kontaktfelder per Muster aus dem gesprochenen Text.
+// Später ersetzt die echte KI nur diese Funktion; die Signatur kann bleiben.
+export type ExtractedContact = { name: string; role: string; company: string; howWeMet: string; notes: string };
+
+const ROLES = [
+  'product designer', 'ux designer', 'ui designer', 'graphic designer', 'designer',
+  'software engineer', 'frontend engineer', 'backend engineer', 'engineer', 'developer',
+  'co-founder', 'cofounder', 'founder', 'ceo', 'cto', 'coo', 'cmo', 'vp',
+  'product manager', 'project manager', 'manager', 'angel investor', 'investor',
+  'data scientist', 'scientist', 'researcher', 'analyst', 'marketer', 'consultant',
+  'director', 'architect', 'writer', 'recruiter', 'partner', 'advisor', 'student', 'professor',
+];
+
+const EVENT_WORDS = 'conference|meetup|summit|event|workshop|hackathon|party|dinner|drinks|panel|expo|fair|retreat|mixer|launch|webinar';
+
+// Wörter, die nie Teil eines Namens sind – sonst wird aus „met at the party“ ein Name.
+const NAME_STOP = new Set([
+  'at', 'in', 'on', 'the', 'a', 'an', 'with', 'up', 'this', 'that', 'from', 'during', 'and',
+  'her', 'him', 'them', 'my', 'our', 'some', 'someone', 'today', 'yesterday', 'last', 'again',
+  'who', 'she', 'he', 'they', 'it', 'was', 'is', 'for', 'about', 'to',
+]);
+
+// „at all“, „from work“ usw. sehen wie eine Firma aus, sind aber keine.
+const COMPANY_REJECT = new Set([
+  'all', 'home', 'work', 'once', 'first', 'last', 'least', 'most', 'night', 'lunch', 'coffee',
+  'breakfast', 'school', 'university', 'college', 'now', 'then', 'me', 'us', 'them', 'there', 'here',
+]);
+
+function titleCase(value: string): string {
+  return value.replace(/\b[a-z]/g, (ch) => ch.toUpperCase());
+}
+
+function takeName(raw: string): string {
+  const words: string[] = [];
+  for (const word of raw.split(/\s+/)) {
+    const clean = word.replace(/[^a-zA-Z'’-]/g, '');
+    if (!clean || NAME_STOP.has(clean.toLowerCase())) break;
+    words.push(clean);
+    if (words.length === 2) break;
+  }
+  return titleCase(words.join(' '));
+}
+
+export function extractContact(text: string): ExtractedContact {
+  const notes = text.trim().replace(/\s+/g, ' ');
+  const out: ExtractedContact = { name: '', role: '', company: '', howWeMet: '', notes };
+  if (!notes) return out;
+
+  const nameMatch = notes.match(
+    /\b(?:met with|met|talked to|spoke to|spoke with|ran into|bumped into|introduced to|this is|(?:his|her|their) name is)\s+(.+)/i
+  );
+  if (nameMatch) out.name = takeName(nameMatch[1]);
+
+  // Erst das Event herausziehen, damit „at the SaaStr conference“ nicht als Firma gilt.
+  let rest = notes;
+  const eventMatch = notes.match(new RegExp(`\\b(?:at|during)\\s+(?:(?:the|a|an)\\s+)?([^.,;]*?\\b(?:${EVENT_WORDS})\\b)`, 'i'));
+  if (eventMatch) {
+    out.howWeMet = titleCase(eventMatch[1].trim());
+    rest = notes.replace(eventMatch[0], ' ');
+  }
+
+  const roleMatch = rest.match(new RegExp(`\\b((?:senior|junior|lead|principal|staff|head of|chief)\\s+)?(${ROLES.join('|')})\\b`, 'i'));
+  if (roleMatch) out.role = titleCase(`${roleMatch[1] ?? ''}${roleMatch[2]}`.trim());
+
+  const companyMatch = rest.match(/\b(?:works?|working)?\s*(?:at|for|from)\s+([^.,;]+)/i);
+  if (companyMatch) {
+    const words = companyMatch[1].trim().split(/\s+/).slice(0, 3);
+    const stopAt = words.findIndex((w) => /^(and|but|she|he|they|we|who|which|last|this|about|on|in|as)$/i.test(w));
+    const picked = (stopAt === -1 ? words : words.slice(0, stopAt)).join(' ');
+    const isJunk = COMPANY_REJECT.has(picked.toLowerCase()) || new RegExp(EVENT_WORDS, 'i').test(picked);
+    if (picked && !isJunk) out.company = titleCase(picked);
+  }
+
+  if (!out.howWeMet) out.howWeMet = 'Captured by voice note';
+  return out;
+}
+
 export function findContactInText(text: string, contacts: Contact[]): Contact | undefined {
   const q = text.toLowerCase();
   return contacts.find((ct) => q.includes(ct.name.toLowerCase()) || q.includes(ct.name.split(' ')[0].toLowerCase()));

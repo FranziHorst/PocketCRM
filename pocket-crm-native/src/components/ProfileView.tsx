@@ -4,7 +4,9 @@ import { Camera, FileDown, Plus, Trash2, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { UserProfile } from '../../types';
 import { exportContactsCsv } from '../csv';
+import { buildContactCard } from '../contactCard';
 import { c, r, t, font } from '../theme';
+import { QrCode } from './QrCode';
 import { Avatar, Btn, Field, Group, PageTitle, Row, SocialIcon, TextBtn } from './ui';
 
 const Label = ({ children }: { children: React.ReactNode }) => (
@@ -114,6 +116,14 @@ export function ProfileView() {
           </Group>
         </View>
       ) : null}
+
+      <View>
+        <Label>My QR code</Label>
+        <Group style={{ paddingVertical: 18, alignItems: 'center', gap: 10 }}>
+          <QrCode value={buildContactCard(userProfile)} size={240} />
+          <Text style={[t.caption, { textAlign: 'center' }]}>Let someone scan this with Pocket CRM to add you as a contact.</Text>
+        </Group>
+      </View>
 
       {socials.length > 0 ? (
         <View>
