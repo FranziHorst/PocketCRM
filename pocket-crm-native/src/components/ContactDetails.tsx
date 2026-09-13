@@ -1,83 +1,98 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { CalendarDays, Check, Mail, MapPin, Tag } from 'lucide-react-native';
+import { CalendarDays, Mail, MapPin, Phone, Tag } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { Contact } from '../../types';
 import { formatDate } from '../../crmHelpers';
-import { c, r } from '../theme';
-import { SocialIcon, openLink } from './ui';
-import { Phone } from 'lucide-react-native';
+import { c, r, t, font } from '../theme';
+import { Group, Row, SocialIcon, openLink } from './ui';
 
-const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
-  <View style={{ gap: 8 }}>
-    <Text style={{ fontSize: 11, fontWeight: '700', color: c.slate400, textTransform: 'uppercase', letterSpacing: 0.8 }}>{title}</Text>
-    {children}
-  </View>
+const Label = ({ children }: { children: React.ReactNode }) => (
+  <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.textSecondary, marginBottom: 8, marginLeft: 4 }}>{children}</Text>
 );
 
-const Row = ({ icon, text, onPress }: { icon: React.ReactNode; text: string; onPress?: () => void }) => (
-  <Pressable onPress={onPress} disabled={!onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
-    <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.slate100, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
-    <Text style={{ flex: 1, fontSize: 13, color: onPress ? c.indigo700 : c.slate800 }}>{text}</Text>
-  </Pressable>
+const IconRow = ({ icon, text, sub, onPress, first }: { icon: React.ReactNode; text: string; sub?: string; onPress?: () => void; first?: boolean }) => (
+  <Row onPress={onPress} first={first}>
+    <View style={{ width: 32, height: 32, borderRadius: 10, backgroundColor: c.surfaceSoft, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
+    <View style={{ flex: 1 }}>
+      <Text style={[t.body, onPress && { color: c.accentDark }]}>{text}</Text>
+      {sub ? <Text style={t.caption}>{sub}</Text> : null}
+    </View>
+  </Row>
 );
 
-// Lesende Darstellung eines Kontakts (ohne Rahmen/Seite drumherum).
+// Lesende Darstellung eines Kontakts.
 export function ContactDetails({ contact: ct }: { contact: Contact }) {
   const { events } = useCrm();
   const event = ct.eventId ? events.find((e) => e.id === ct.eventId) : undefined;
   const sl = ct.socialLinks || {};
   const socials = (['linkedin', 'twitter', 'instagram', 'website', 'github'] as const).filter((k) => sl[k]);
-  const empty = !ct.location && !ct.email && !ct.phone && !ct.howWeMet && !ct.notes && !event && socials.length === 0 && ct.tags.length === 0;
+  const hasContact = !!(ct.location || ct.email || ct.phone);
+  const hasMet = !!(event || ct.howWeMet || ct.metOn);
+  const empty = !hasContact && !hasMet && !ct.notes && socials.length === 0 && ct.tags.length === 0;
+
+  if (empty) {
+    return <Text style={[t.secondary, { textAlign: 'center', paddingVertical: 28 }]}>No details yet. Tap Edit to add some.</Text>;
+  }
 
   return (
     <View style={{ gap: 22 }}>
-      {(ct.location || ct.email || ct.phone) ? (
-        <Section title="Contact">
-          {ct.location ? <Row icon={<MapPin size={14} color={c.slate600} />} text={ct.location} /> : null}
-          {ct.email ? <Row icon={<Mail size={14} color={c.slate600} />} text={ct.email} onPress={() => openLink(`mailto:${ct.email}`)} /> : null}
-          {ct.phone ? <Row icon={<Phone size={14} color={c.slate600} />} text={ct.phone} onPress={() => openLink(`tel:${ct.phone}`)} /> : null}
-        </Section>
+      {hasContact ? (
+        <View>
+          <Label>Contact</Label>
+          <Group>
+            {ct.location ? <IconRow first icon={<MapPin size={16} color={c.text2} />} text={ct.location} /> : null}
+            {ct.email ? <IconRow first={!ct.location} icon={<Mail size={16} color={c.text2} />} text={ct.email} onPress={() => openLink(`mailto:${ct.email}`)} /> : null}
+            {ct.phone ? <IconRow first={!ct.location && !ct.email} icon={<Phone size={16} color={c.text2} />} text={ct.phone} onPress={() => openLink(`tel:${ct.phone}`)} /> : null}
+          </Group>
+        </View>
       ) : null}
 
-      {(event || ct.howWeMet || ct.metOn) ? (
-        <Section title="First contact">
-          {event ? <Row icon={<CalendarDays size={14} color={c.slate600} />} text={`${event.name}${event.location ? ` · ${event.location}` : ''}`} /> : null}
-          {ct.metOn ? <Row icon={<Check size={14} color={c.slate600} />} text={`First met on ${formatDate(ct.metOn)}`} /> : null}
-          {ct.howWeMet ? <Text style={{ fontSize: 13, color: c.slate700, lineHeight: 19 }}>{ct.howWeMet}</Text> : null}
-        </Section>
+      {hasMet ? (
+        <View>
+          <Label>First contact</Label>
+          <Group>
+            {event ? <IconRow first icon={<CalendarDays size={16} color={c.text2} />} text={event.name} sub={[ct.metOn ? formatDate(ct.metOn) : '', event.location].filter(Boolean).join(', ')} /> : ct.metOn ? <IconRow first icon={<CalendarDays size={16} color={c.text2} />} text={formatDate(ct.metOn)} /> : null}
+            {ct.howWeMet ? (
+              <View style={{ paddingVertical: 12, borderTopWidth: event || ct.metOn ? 1 : 0, borderTopColor: c.line }}>
+                <Text style={t.body}>{ct.howWeMet}</Text>
+              </View>
+            ) : null}
+          </Group>
+        </View>
       ) : null}
 
       {ct.notes ? (
-        <Section title="Notes">
-          <View style={{ backgroundColor: c.slate50, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.slate100 }}>
-            <Text style={{ fontSize: 13, color: c.slate700, lineHeight: 19 }}>{ct.notes}</Text>
-          </View>
-        </Section>
+        <View>
+          <Label>Notes</Label>
+          <Group style={{ paddingVertical: 14 }}>
+            <Text style={t.body}>{ct.notes}</Text>
+          </Group>
+        </View>
       ) : null}
 
       {socials.length > 0 ? (
-        <Section title="Profiles">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8 }}>
+        <View>
+          <Label>Profiles</Label>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 4 }}>
             {socials.map((k) => <SocialIcon key={k} kind={k} url={sl[k]!} withLabel />)}
           </View>
-        </Section>
+        </View>
       ) : null}
 
       {ct.tags.length > 0 ? (
-        <Section title="Tags">
-          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
-            {ct.tags.map((t) => (
-              <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.slate100, borderRadius: r.md, paddingHorizontal: 10, paddingVertical: 5 }}>
-                <Tag size={11} color={c.slate500} />
-                <Text style={{ fontSize: 12, fontWeight: '500', color: c.slate700 }}>{t}</Text>
+        <View>
+          <Label>Tags</Label>
+          <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 8, paddingHorizontal: 4 }}>
+            {ct.tags.map((tag) => (
+              <View key={tag} style={{ flexDirection: 'row', alignItems: 'center', gap: 5, backgroundColor: c.surface, borderWidth: 1, borderColor: c.line, borderRadius: r.full, paddingHorizontal: 12, paddingVertical: 7 }}>
+                <Tag size={12} color={c.textMuted} />
+                <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.text2 }}>{tag}</Text>
               </View>
             ))}
           </View>
-        </Section>
+        </View>
       ) : null}
-
-      {empty ? <Text style={{ fontSize: 13, color: c.slate400, textAlign: 'center', paddingVertical: 20 }}>No details yet. Tap Edit to add some.</Text> : null}
     </View>
   );
 }

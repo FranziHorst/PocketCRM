@@ -5,7 +5,7 @@ import * as Device from 'expo-device';
 import { Keyboard, QrCode } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { parseLinkedInUrl } from '../linkedin';
-import { c, r } from '../theme';
+import { c, r, font } from '../theme';
 import { Btn, Input, Label, ModalShell } from './ui';
 
 const canUseCamera = Platform.OS !== 'web' && Device.isDevice;
@@ -37,13 +37,13 @@ function Scanner({ onClose, onResult }: { onClose: () => void; onResult: (prefil
       onClose={onClose}
       title="Scan LinkedIn QR"
       subtitle={showCamera ? 'Point the camera at their LinkedIn QR code' : 'Paste the LinkedIn profile link'}
-      icon={<QrCode size={16} color={c.indigo600} />}
+      icon={<QrCode size={16} color={c.accent} />}
       footer={
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'space-between', alignItems: 'center' }}>
           {canUseCamera ? (
             <Pressable onPress={() => { setManual(!manual); setError(null); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-              {manual ? <QrCode size={14} color={c.indigo600} /> : <Keyboard size={14} color={c.indigo600} />}
-              <Text style={{ fontSize: 12, fontWeight: '600', color: c.indigo600 }}>{manual ? 'Use camera' : 'Enter link instead'}</Text>
+              {manual ? <QrCode size={14} color={c.accent} /> : <Keyboard size={14} color={c.accent} />}
+              <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.accent }}>{manual ? 'Use camera' : 'Enter link instead'}</Text>
             </Pressable>
           ) : <View />}
           <View style={{ flexDirection: 'row', gap: 8 }}>
@@ -55,12 +55,12 @@ function Scanner({ onClose, onResult }: { onClose: () => void; onResult: (prefil
       {showCamera ? (
         !permission ? null : !permission.granted ? (
           <View style={{ alignItems: 'center', gap: 12, paddingVertical: 20 }}>
-            <Text style={{ fontSize: 12, color: c.slate600, textAlign: 'center' }}>Pocket CRM needs camera access to scan QR codes.</Text>
+            <Text style={{ fontSize: 12, color: c.textSecondary, textAlign: 'center' , fontFamily: font.regular}}>Pocket CRM needs camera access to scan QR codes.</Text>
             <Btn label="Allow camera" onPress={requestPermission} />
           </View>
         ) : (
           <View style={{ gap: 10 }}>
-            <View style={{ height: 300, borderRadius: r.xl, overflow: 'hidden', backgroundColor: c.slate900 }}>
+            <View style={{ height: 300, borderRadius: r.xl, overflow: 'hidden', backgroundColor: c.text }}>
               <CameraView
                 style={{ flex: 1 }}
                 facing="back"
@@ -68,13 +68,13 @@ function Scanner({ onClose, onResult }: { onClose: () => void; onResult: (prefil
                 onBarcodeScanned={scanned ? undefined : ({ data }) => { setScanned(true); handle(data); }}
               />
             </View>
-            <Text style={{ fontSize: 11, color: c.slate500, textAlign: 'center' }}>In the LinkedIn app: search bar → QR icon → “My code”.</Text>
+            <Text style={{ fontSize: 11, color: c.textSecondary, textAlign: 'center' , fontFamily: font.regular}}>In the LinkedIn app: search bar → QR icon → “My code”.</Text>
           </View>
         )
       ) : (
         <View>
           {!canUseCamera && (
-            <Text style={{ fontSize: 11, color: c.slate500, marginBottom: 12 }}>
+            <Text style={{ fontSize: 11, color: c.textSecondary, marginBottom: 12 , fontFamily: font.regular}}>
               {Platform.OS === 'web' ? 'Camera scanning works in the mobile app.' : 'The simulator has no camera, so paste the link here.'}
             </Text>
           )}
@@ -82,7 +82,7 @@ function Scanner({ onClose, onResult }: { onClose: () => void; onResult: (prefil
           <Input value={url} onChangeText={(v) => { setUrl(v); setError(null); }} placeholder="https://www.linkedin.com/in/maya-lin" autoCapitalize="none" keyboardType="url" onSubmitEditing={() => handle(url)} />
         </View>
       )}
-      {error ? <Text style={{ fontSize: 11, color: c.rose600, backgroundColor: c.rose50, padding: 8, borderRadius: r.md, marginTop: 10 }}>{error}</Text> : null}
+      {error ? <Text style={{ fontSize: 11, color: c.danger, backgroundColor: c.dangerSoft, padding: 8, borderRadius: r.md, marginTop: 10 , fontFamily: font.regular}}>{error}</Text> : null}
     </ModalShell>
   );
 }

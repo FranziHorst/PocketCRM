@@ -1,12 +1,12 @@
-import { ScrollView } from 'react-native';
 import { ProfileView } from '@/components/ProfileView';
+import { Screen } from '@/components/ui';
 import { useCrm } from '@/store';
 
 export default function Profile() {
   const { userProfile } = useCrm();
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }} keyboardShouldPersistTaps="handled">
+    <Screen>
       <ProfileView key={userProfile.id} />
-    </ScrollView>
+    </Screen>
   );
 }

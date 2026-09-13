@@ -31,7 +31,7 @@ function Form({ onClose, contacts, addTask }: { onClose: () => void; contacts: R
       visible
       onClose={onClose}
       title="Add Daily Task"
-      icon={<CheckSquare size={16} color={c.indigo600} />}
+      icon={<CheckSquare size={16} color={c.accent} />}
       footer={
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
           <Btn label="Cancel" variant="ghost" onPress={onClose} />
