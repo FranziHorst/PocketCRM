@@ -7,6 +7,13 @@
       "runtimeArgs": ["expo", "start", "--web"],
       "port": 8081,
       "cwd": "pocket-crm-native"
+    },
+    {
+      "name": "pocket-crm-dev",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": ["run", "dev"],
+      "port": 3000,
+      "cwd": "pocket-crm"
     }
   ]
 }
