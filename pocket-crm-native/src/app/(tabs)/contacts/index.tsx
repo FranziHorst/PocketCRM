@@ -1,16 +1,17 @@
-import { Pressable, ScrollView, View } from 'react-native';
+import { Pressable, View } from 'react-native';
 import { Plus } from 'lucide-react-native';
 import { ContactsView } from '@/components/ContactsView';
 import { useCrm } from '@/store';
 import { c } from '@/theme';
+import { Screen } from '@/components/ui';
 
 export default function Contacts() {
   const { openAddContact } = useCrm();
   return (
     <View style={{ flex: 1 }}>
-      <ScrollView contentContainerStyle={{ padding: 16, paddingBottom: 96 }} keyboardShouldPersistTaps="handled">
+      <Screen bottomInset={100}>
         <ContactsView />
-      </ScrollView>
+      </Screen>
       <Pressable
         onPress={() => openAddContact()}
         accessibilityLabel="Add contact"

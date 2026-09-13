@@ -4,7 +4,8 @@ import {
   StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react-native';
-import { avatarBg, BadgeColors, c, r } from '../theme';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
+import { avatarBg, BadgeColors, c, r, t } from '../theme';
 
 export const Card = ({ children, style }: { children: React.ReactNode; style?: ViewStyle }) => (
   <View style={[s.card, style]}>{children}</View>
@@ -30,7 +31,7 @@ export const Chip = ({ label, active, onPress, icon, activeBg = c.text, activeTe
   { label: string; active?: boolean; onPress: () => void; icon?: React.ReactNode; activeBg?: string; activeText?: string; bg?: string; text?: string }) => (
   <Pressable onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: r.full, backgroundColor: active ? activeBg : bg, borderWidth: 1, borderColor: active ? activeBg : c.border }}>
     {icon}
-    <Text style={{ fontSize: 12, fontWeight: '500', color: active ? activeText : text }}>{label}</Text>
+    <Text style={{ fontSize: 13, fontWeight: '500', color: active ? activeText : text }}>{label}</Text>
   </Pressable>
 );
 
@@ -45,15 +46,15 @@ export const Btn = ({ label, onPress, icon, variant = 'primary', disabled, style
     violet: { bg: c.accentSoft, text: c.accentDark, border: c.accentBorder },
   }[variant];
   return (
-    <Pressable onPress={onPress} disabled={disabled} style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 14, paddingVertical: 9, borderRadius: r.full, backgroundColor: v.bg, borderWidth: 1, borderColor: v.border, opacity: disabled ? 0.4 : 1 }, style]}>
+    <Pressable onPress={onPress} disabled={disabled} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 11, borderRadius: r.full, backgroundColor: v.bg, borderWidth: 1, borderColor: v.border, opacity: disabled ? 0.4 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }, style]}>
       {icon}
-      <Text style={{ color: v.text, fontSize: 12, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: v.text, fontSize: 14, fontWeight: '600' }}>{label}</Text>
     </Pressable>
   );
 };
 
 export const Label = ({ children }: { children: React.ReactNode }) => (
-  <Text style={{ fontSize: 12, fontWeight: '600', color: c.text2, marginBottom: 4 }}>{children}</Text>
+  <Text style={{ fontSize: 13, fontWeight: '600', color: c.text2, marginBottom: 6 }}>{children}</Text>
 );
 
 export const Input = (props: TextInputProps) => (
@@ -154,7 +155,7 @@ export const ModalShell = ({ visible, onClose, title, subtitle, icon, children, 
 
 const s = StyleSheet.create({
   card: { backgroundColor: c.surface, borderRadius: r.xxl, padding: 16, borderWidth: 1, borderColor: c.line },
-  input: { backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.lg, paddingHorizontal: 12, paddingVertical: 10, fontSize: 14, color: c.text },
+  input: { backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.lg, paddingHorizontal: 14, paddingVertical: 12, fontSize: 15, color: c.text },
   overlay: { flex: 1, backgroundColor: 'rgba(62,56,53,0.45)' },
   modal: { backgroundColor: c.surface, borderRadius: r.xxl, maxHeight: '85%', overflow: 'hidden', borderWidth: 1, borderColor: c.line },
   modalHeader: { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingHorizontal: 20, paddingVertical: 14, borderBottomWidth: 1, borderBottomColor: c.line, backgroundColor: c.surface },
@@ -210,3 +211,53 @@ export function SelectField({ label, value, options, onChange, placeholder = 'Se
     </View>
   );
 }
+
+// Seitentitel im Stil großer iOS-Titel.
+export const PageTitle = ({ title, subtitle, right }: { title: string; subtitle?: string; right?: React.ReactNode }) => (
+  <View style={{ flexDirection: 'row', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: 16 }}>
+    <View style={{ flex: 1 }}>
+      <Text style={t.title}>{title}</Text>
+      {subtitle ? <Text style={[t.secondary, { marginTop: 2 }]}>{subtitle}</Text> : null}
+    </View>
+    {right}
+  </View>
+);
+
+// Abschnittskopf ohne Kachel.
+export const SectionHeader = ({ title, right, style }: { title: string; right?: React.ReactNode; style?: ViewStyle }) => (
+  <View style={[{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginTop: 8, marginBottom: 8 }, style]}>
+    <Text style={t.h2}>{title}</Text>
+    {right}
+  </View>
+);
+
+// Listenzeile mit Hairline statt Rahmen.
+export const Row = ({ children, onPress, first, style }: { children: React.ReactNode; onPress?: () => void; first?: boolean; style?: ViewStyle }) => (
+  <Pressable onPress={onPress} disabled={!onPress} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', gap: 12, paddingVertical: 12, borderTopWidth: first ? 0 : 1, borderTopColor: c.line, backgroundColor: pressed ? c.surfaceSoft : 'transparent', marginHorizontal: -16, paddingHorizontal: 16 }, style]}>
+    {children}
+  </Pressable>
+);
+
+// Gruppe von Zeilen auf heller Fläche.
+export const Group = ({ children, style }: { children: React.ReactNode; style?: ViewStyle }) => (
+  <View style={[{ backgroundColor: c.surface, borderRadius: r.xxl, paddingHorizontal: 16, overflow: 'hidden' }, style]}>{children}</View>
+);
+
+// Textlink-Button für Kopfzeilen ("Add", "Edit", "See all").
+export const TextBtn = ({ label, onPress, icon }: { label: string; onPress: () => void; icon?: React.ReactNode }) => (
+  <Pressable onPress={onPress} hitSlop={8} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: pressed ? 0.6 : 1 })}>
+    {icon}
+    <Text style={{ fontSize: 15, fontWeight: '600', color: c.accentDark }}>{label}</Text>
+  </Pressable>
+);
+
+// Seitencontainer mit Safe-Area oben, ohne App-Header.
+export const Screen = ({ children, scroll = true, bottomInset = 32 }: { children: React.ReactNode; scroll?: boolean; bottomInset?: number }) => {
+  const insets = useSafeAreaInsets();
+  if (!scroll) return <View style={{ flex: 1, paddingTop: insets.top + 8 }}>{children}</View>;
+  return (
+    <ScrollView contentContainerStyle={{ paddingTop: insets.top + 12, paddingHorizontal: 20, paddingBottom: bottomInset }} keyboardShouldPersistTaps="handled">
+      {children}
+    </ScrollView>
+  );
+};

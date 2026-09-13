@@ -1,10 +1,10 @@
-import { ScrollView } from 'react-native';
 import { DashboardView } from '@/components/DashboardView';
+import { Screen } from '@/components/ui';
 
 export default function Dashboard() {
   return (
-    <ScrollView contentContainerStyle={{ padding: 16 }}>
+    <Screen>
       <DashboardView />
-    </ScrollView>
+    </Screen>
   );
 }

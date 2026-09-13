@@ -1,5 +1,4 @@
 import { Stack } from 'expo-router';
-import { AppHeader } from '@/components/AppHeader';
 import { c } from '@/theme';
 
 export default function ContactsStack() {
@@ -13,7 +12,7 @@ export default function ContactsStack() {
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: c.bg },
       }}>
-      <Stack.Screen name="index" options={{ header: () => <AppHeader /> }} />
+      <Stack.Screen name="index" options={{ headerShown: false }} />
       <Stack.Screen name="[id]" options={{ title: '' }} />
     </Stack>
   );

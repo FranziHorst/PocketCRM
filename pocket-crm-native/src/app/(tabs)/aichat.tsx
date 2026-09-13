@@ -1,10 +1,10 @@
-import { View } from 'react-native';
 import { AIChatView } from '@/components/AIChatView';
+import { Screen } from '@/components/ui';
 
 export default function AIChat() {
   return (
-    <View style={{ flex: 1 }}>
+    <Screen scroll={false}>
       <AIChatView />
-    </View>
+    </Screen>
   );
 }

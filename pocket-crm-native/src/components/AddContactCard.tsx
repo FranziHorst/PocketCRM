@@ -1,48 +1,34 @@
 import React from 'react';
 import { Alert, Platform, Pressable, Text, View } from 'react-native';
-import { Mic, QrCode, Sparkles } from 'lucide-react-native';
+import { Mic, QrCode } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { c, r } from '../theme';
-import { Card } from './ui';
 
 export function AddContactCard() {
   const { setScanOpen } = useCrm();
 
   // TODO(Sprache): Aufnahme + Feldzuordnung folgt; bis dahin nur ein Hinweis.
   const speakToAI = () => {
-    const msg = 'Speak to AI is coming next: describe who you met and the copilot fills in the contact.';
+    const msg = 'Speak to AI is coming next: describe who you met and the assistant fills in the contact.';
     if (Platform.OS === 'web') window.alert(msg); else Alert.alert('Coming soon', msg);
   };
 
   return (
-    <Card style={{ gap: 12 }}>
-      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.accentSoft2, alignItems: 'center', justifyContent: 'center' }}>
-          <Sparkles size={14} color={c.accentDark} />
-        </View>
-        <View style={{ flex: 1 }}>
-          <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }}>Add a contact</Text>
-          <Text style={{ fontSize: 11, color: c.textSecondary }}>Just met someone? Capture them in seconds.</Text>
-        </View>
+    <View style={{ backgroundColor: c.accent, borderRadius: r.xxl, padding: 20, gap: 16 }}>
+      <View style={{ gap: 4 }}>
+        <Text style={{ fontSize: 20, fontWeight: '700', letterSpacing: -0.4, color: c.text }}>Just met someone?</Text>
+        <Text style={{ fontSize: 14, color: c.text2, lineHeight: 20 }}>Capture them before the details fade.</Text>
       </View>
-
       <View style={{ flexDirection: 'row', gap: 10 }}>
-        <Pressable onPress={speakToAI} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 8, padding: 14, borderRadius: r.xl, backgroundColor: c.accent, opacity: pressed ? 0.9 : 1 })}>
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: 'rgba(253,251,247,0.55)', alignItems: 'center', justifyContent: 'center' }}>
-            <Mic size={20} color={c.text} />
-          </View>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: c.text }}>Speak to AI</Text>
-          <Text style={{ fontSize: 10, color: c.text2, textAlign: 'center' }}>Describe who you met</Text>
+        <Pressable onPress={speakToAI} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 13, borderRadius: r.full, backgroundColor: c.text, opacity: pressed ? 0.85 : 1 })}>
+          <Mic size={17} color={c.onDark} />
+          <Text style={{ fontSize: 15, fontWeight: '600', color: c.onDark }}>Speak to AI</Text>
         </Pressable>
-
-        <Pressable onPress={() => setScanOpen(true)} style={({ pressed }) => ({ flex: 1, alignItems: 'center', gap: 8, padding: 14, borderRadius: r.xl, backgroundColor: pressed ? c.line : c.surfaceSoft, borderWidth: 1, borderColor: c.border })}>
-          <View style={{ width: 40, height: 40, borderRadius: 20, backgroundColor: c.text, alignItems: 'center', justifyContent: 'center' }}>
-            <QrCode size={20} color={c.onDark} />
-          </View>
-          <Text style={{ fontSize: 13, fontWeight: '700', color: c.text }}>Scan LinkedIn QR</Text>
-          <Text style={{ fontSize: 10, color: c.textSecondary, textAlign: 'center' }}>From their LinkedIn app</Text>
+        <Pressable onPress={() => setScanOpen(true)} style={({ pressed }) => ({ flex: 1, flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 8, paddingVertical: 13, borderRadius: r.full, backgroundColor: pressed ? c.line : c.surface })}>
+          <QrCode size={17} color={c.text} />
+          <Text style={{ fontSize: 15, fontWeight: '600', color: c.text }}>Scan QR</Text>
         </Pressable>
       </View>
-    </Card>
+    </View>
   );
 }

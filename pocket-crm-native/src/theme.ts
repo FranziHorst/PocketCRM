@@ -66,3 +66,13 @@ export function priorityColors(p: 'high' | 'medium' | 'low'): BadgeColors {
   if (p === 'medium') return { bg: c.goldSoft, text: c.text2, border: c.goldBorder };
   return { bg: c.surfaceSoft, text: c.textSecondary, border: c.border };
 }
+
+// Typo-Skala für Handy-Bildschirme.
+export const t = {
+  title: { fontSize: 28, fontWeight: '700' as const, letterSpacing: -0.6, color: c.text },
+  h2: { fontSize: 17, fontWeight: '600' as const, letterSpacing: -0.2, color: c.text },
+  body: { fontSize: 15, fontWeight: '400' as const, color: c.text, lineHeight: 21 },
+  bodyStrong: { fontSize: 15, fontWeight: '600' as const, color: c.text },
+  secondary: { fontSize: 13, fontWeight: '400' as const, color: c.textSecondary, lineHeight: 18 },
+  caption: { fontSize: 12, fontWeight: '500' as const, color: c.textMuted },
+};
