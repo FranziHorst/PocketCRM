@@ -119,6 +119,12 @@ const NAME_STOP = new Set([
   'who', 'she', 'he', 'they', 'it', 'was', 'is', 'for', 'about', 'to',
 ]);
 
+// Häufige großgeschriebene Wörter, die kein Name sind (Satzanfang, Ausrufe, Ortsangaben).
+const CAP_STOP = new Set([
+  'i', 'she', 'he', 'they', 'we', 'this', 'that', 'so', 'and', 'but', 'well', 'ok', 'okay',
+  'just', 'also', 'then', 'today', 'yesterday', 'her', 'him', 'them', 'met', 'talked', 'spoke',
+]);
+
 // „at all“, „from work“ usw. sehen wie eine Firma aus, sind aber keine.
 const COMPANY_REJECT = new Set([
   'all', 'home', 'work', 'once', 'first', 'last', 'least', 'most', 'night', 'lunch', 'coffee',
@@ -140,15 +146,34 @@ function takeName(raw: string): string {
   return titleCase(words.join(' '));
 }
 
+// Fallback, falls kein Signalwort ("met", "this is", …) einen Namen liefert: die erste
+// großgeschriebene Wortfolge im Text nehmen. Deckt natürliche Sätze ab, in denen der
+// Name zuerst genannt wird und später nur noch per Pronomen darauf verwiesen wird
+// ("Sarah Miller is a product designer, I met her at SaaStr").
+function findCapitalizedName(text: string): string {
+  const words = text.split(/\s+/);
+  for (let i = 0; i < words.length; i += 1) {
+    const clean = words[i].replace(/[^a-zA-Z'’-]/g, '');
+    if (!clean || !/^[A-Z][a-z'’-]*$/.test(clean) || CAP_STOP.has(clean.toLowerCase())) continue;
+    const next = (words[i + 1] ?? '').replace(/[^a-zA-Z'’-]/g, '');
+    if (next && /^[A-Z][a-z'’-]*$/.test(next) && !CAP_STOP.has(next.toLowerCase())) {
+      return titleCase(`${clean} ${next}`);
+    }
+    return titleCase(clean);
+  }
+  return '';
+}
+
 export function extractContact(text: string): ExtractedContact {
   const notes = text.trim().replace(/\s+/g, ' ');
   const out: ExtractedContact = { name: '', role: '', company: '', howWeMet: '', notes };
   if (!notes) return out;
 
   const nameMatch = notes.match(
-    /\b(?:met with|met|talked to|spoke to|spoke with|ran into|bumped into|introduced to|this is|(?:his|her|their) name is)\s+(.+)/i
+    /\b(?:met with|met|talked to|spoke to|spoke with|ran into|bumped into|introduced to|this is|named|(?:his|her|their) name is)\s+(.+)/i
   );
   if (nameMatch) out.name = takeName(nameMatch[1]);
+  if (!out.name) out.name = findCapitalizedName(notes);
 
   // Erst das Event herausziehen, damit „at the SaaStr conference“ nicht als Firma gilt.
   let rest = notes;
