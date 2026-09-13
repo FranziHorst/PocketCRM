@@ -1,6 +1,6 @@
 import React from 'react';
 import { Pressable, Text, View } from 'react-native';
-import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
+import { CheckCircle2, Circle, Plus, Sparkles, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { getGreeting } from '../../crmHelpers';
 import { c, r, t, font, priorityColors } from '../theme';
@@ -15,6 +15,13 @@ export function DashboardView() {
 
   return (
     <View style={{ gap: 20 }}>
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, marginBottom: -6 }}>
+        <View style={{ width: 24, height: 24, borderRadius: 8, backgroundColor: c.accentDark, alignItems: 'center', justifyContent: 'center' }}>
+          <Sparkles size={13} color={c.onDark} />
+        </View>
+        <Text style={{ fontSize: 15, fontFamily: font.display, letterSpacing: -0.2, color: c.text }}>Pocket CRM</Text>
+      </View>
+
       <View style={{ backgroundColor: c.text, borderRadius: r.xxl, padding: 22, gap: 18 }}>
         <View style={{ gap: 4 }}>
           <Text style={{ fontSize: 27, fontFamily: font.display, letterSpacing: -0.4, color: c.onDark }}>{greeting.text.replace(/!$/, '')}</Text>
