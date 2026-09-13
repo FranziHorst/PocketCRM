@@ -4,13 +4,13 @@ import { CalendarDays, Check, Mail, MapPin, Tag } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { Contact } from '../../types';
 import { formatDate } from '../../crmHelpers';
-import { c, r } from '../theme';
+import { c, r, font } from '../theme';
 import { SocialIcon, openLink } from './ui';
 import { Phone } from 'lucide-react-native';
 
 const Section = ({ title, children }: { title: string; children: React.ReactNode }) => (
   <View style={{ gap: 8 }}>
-    <Text style={{ fontSize: 11, fontWeight: '700', color: c.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 }}>{title}</Text>
+    <Text style={{ fontSize: 11, fontFamily: font.display, color: c.textMuted, textTransform: 'uppercase', letterSpacing: 0.8 }}>{title}</Text>
     {children}
   </View>
 );
@@ -18,7 +18,7 @@ const Section = ({ title, children }: { title: string; children: React.ReactNode
 const Row = ({ icon, text, onPress }: { icon: React.ReactNode; text: string; onPress?: () => void }) => (
   <Pressable onPress={onPress} disabled={!onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 10 }}>
     <View style={{ width: 28, height: 28, borderRadius: 8, backgroundColor: c.line, alignItems: 'center', justifyContent: 'center' }}>{icon}</View>
-    <Text style={{ flex: 1, fontSize: 13, color: onPress ? c.accentDark : c.text }}>{text}</Text>
+    <Text style={{ flex: 1, fontSize: 13, color: onPress ? c.accentDark : c.text , fontFamily: font.regular}}>{text}</Text>
   </Pressable>
 );
 
@@ -44,14 +44,14 @@ export function ContactDetails({ contact: ct }: { contact: Contact }) {
         <Section title="First contact">
           {event ? <Row icon={<CalendarDays size={14} color={c.textSecondary} />} text={`${event.name}${event.location ? ` · ${event.location}` : ''}`} /> : null}
           {ct.metOn ? <Row icon={<Check size={14} color={c.textSecondary} />} text={`First met on ${formatDate(ct.metOn)}`} /> : null}
-          {ct.howWeMet ? <Text style={{ fontSize: 13, color: c.text2, lineHeight: 19 }}>{ct.howWeMet}</Text> : null}
+          {ct.howWeMet ? <Text style={{ fontSize: 13, color: c.text2, lineHeight: 19 , fontFamily: font.regular}}>{ct.howWeMet}</Text> : null}
         </Section>
       ) : null}
 
       {ct.notes ? (
         <Section title="Notes">
           <View style={{ backgroundColor: c.surfaceSoft, padding: 12, borderRadius: r.lg, borderWidth: 1, borderColor: c.line }}>
-            <Text style={{ fontSize: 13, color: c.text2, lineHeight: 19 }}>{ct.notes}</Text>
+            <Text style={{ fontSize: 13, color: c.text2, lineHeight: 19 , fontFamily: font.regular}}>{ct.notes}</Text>
           </View>
         </Section>
       ) : null}
@@ -70,14 +70,14 @@ export function ContactDetails({ contact: ct }: { contact: Contact }) {
             {ct.tags.map((t) => (
               <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.line, borderRadius: r.md, paddingHorizontal: 10, paddingVertical: 5 }}>
                 <Tag size={11} color={c.textSecondary} />
-                <Text style={{ fontSize: 12, fontWeight: '500', color: c.text2 }}>{t}</Text>
+                <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.text2 }}>{t}</Text>
               </View>
             ))}
           </View>
         </Section>
       ) : null}
 
-      {empty ? <Text style={{ fontSize: 13, color: c.textMuted, textAlign: 'center', paddingVertical: 20 }}>No details yet. Tap Edit to add some.</Text> : null}
+      {empty ? <Text style={{ fontSize: 13, color: c.textMuted, textAlign: 'center', paddingVertical: 20 , fontFamily: font.regular}}>No details yet. Tap Edit to add some.</Text> : null}
     </View>
   );
 }

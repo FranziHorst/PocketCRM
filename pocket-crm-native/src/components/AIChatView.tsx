@@ -5,7 +5,7 @@ import { Bot, Check, Copy, RefreshCw, RotateCcw, Send, Sparkles, User } from 'lu
 import { useCrm } from '../store';
 import { ChatMessage, Contact } from '../../types';
 import { askAssistant, findContactInText, iceBreakersFor } from '../ai';
-import { c, r } from '../theme';
+import { c, r, font } from '../theme';
 import { Avatar } from './ui';
 
 const ICE_BREAKER_PROMPT = 'Ice breaker for a contact';
@@ -98,10 +98,10 @@ export function AIChatView() {
             <Sparkles size={16} color={c.onDark} />
           </View>
           <View>
-            <Text style={{ fontSize: 12, fontWeight: '700', color: c.text }}>AI Assistant</Text>
+            <Text style={{ fontSize: 12, fontFamily: font.display, color: c.text }}>AI Assistant</Text>
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <View style={{ width: 6, height: 6, borderRadius: 3, backgroundColor: c.accent }} />
-              <Text style={{ fontSize: 10, fontWeight: '500', color: c.accentDark }}>CRM Enabled • Demo mode</Text>
+              <Text style={{ fontSize: 10, fontFamily: font.medium, color: c.accentDark }}>CRM Enabled • Demo mode</Text>
             </View>
           </View>
         </View>
@@ -119,21 +119,21 @@ export function AIChatView() {
                 {me ? <User size={14} color={c.onDark} /> : <Bot size={14} color={c.onDark} />}
               </View>
               <View style={{ maxWidth: '82%', borderRadius: r.xl, paddingHorizontal: 14, paddingVertical: 10, backgroundColor: me ? c.text : c.surface, borderWidth: me ? 0 : 1, borderColor: c.line, gap: 6 }}>
-                <Text style={{ fontSize: 13, lineHeight: 19, color: me ? c.onDark : c.text }}>{msg.text}</Text>
+                <Text style={{ fontSize: 13, lineHeight: 19, color: me ? c.onDark : c.text , fontFamily: font.regular}}>{msg.text}</Text>
                 {msg.kind === 'pickContact' && <ContactPicker contacts={contacts} onPick={(ct) => runIceBreaker(ct)} disabled={loading} />}
                 {!me && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', paddingTop: 6, borderTopWidth: 1, borderTopColor: c.line }}>
-                    <Text style={{ fontSize: 11, color: c.textMuted }}>{msg.timestamp}</Text>
+                    <Text style={{ fontSize: 11, color: c.textMuted , fontFamily: font.regular}}>{msg.timestamp}</Text>
                     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 12 }}>
                     {msg.kind === 'iceBreakers' && msg.contactId ? (
                       <Pressable onPress={() => { const ct = contacts.find((x) => x.id === msg.contactId); if (ct) runIceBreaker(ct, (msg.seed ?? 0) + 1); }} disabled={loading} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                         <RefreshCw size={13} color={c.accentDark} />
-                        <Text style={{ fontSize: 11, fontWeight: '600', color: c.accentDark }}>Another one</Text>
+                        <Text style={{ fontSize: 11, fontFamily: font.medium, color: c.accentDark }}>Another one</Text>
                       </Pressable>
                     ) : null}
                     <Pressable onPress={() => copy(msg.text, msg.id)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
                       {copiedId === msg.id ? <Check size={14} color={c.accentDark} /> : <Copy size={14} color={c.textMuted} />}
-                      <Text style={{ fontSize: 11, fontWeight: copiedId === msg.id ? '600' : '400', color: copiedId === msg.id ? c.accentDark : c.textMuted }}>{copiedId === msg.id ? 'Copied' : 'Copy'}</Text>
+                      <Text style={{ fontSize: 12, fontFamily: copiedId === msg.id ? font.medium : font.regular, color: copiedId === msg.id ? c.accentDark : c.textMuted}}>{copiedId === msg.id ? 'Copied' : 'Copy'}</Text>
                     </Pressable>
                     </View>
                   </View>
@@ -145,7 +145,7 @@ export function AIChatView() {
         {loading && (
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8, paddingLeft: 36 }}>
             <ActivityIndicator size="small" color={c.accentDark} />
-            <Text style={{ fontSize: 12, color: c.textMuted }}>AI Assistant is thinking...</Text>
+            <Text style={{ fontSize: 12, color: c.textMuted , fontFamily: font.regular}}>AI Assistant is thinking...</Text>
           </View>
         )}
       </ScrollView>
@@ -153,7 +153,7 @@ export function AIChatView() {
       <ScrollView horizontal showsHorizontalScrollIndicator={false} style={{ flexGrow: 0, backgroundColor: c.surface, borderTopWidth: 1, borderTopColor: c.line }} contentContainerStyle={{ paddingHorizontal: 12, paddingVertical: 8, gap: 6 }}>
         {SAMPLE_PROMPTS.map((p) => (
           <Pressable key={p} onPress={() => send(p)} style={{ paddingHorizontal: 10, paddingVertical: 5, borderRadius: r.full, backgroundColor: c.line }}>
-            <Text style={{ fontSize: 11, fontWeight: '500', color: c.textSecondary }}>{p}</Text>
+            <Text style={{ fontSize: 11, fontFamily: font.medium, color: c.textSecondary }}>{p}</Text>
           </Pressable>
         ))}
       </ScrollView>
@@ -174,16 +174,16 @@ function ContactPicker({ contacts, onPick, disabled }: { contacts: Contact[]; on
   return (
     <View style={{ gap: 8, marginTop: 4 }}>
       {contacts.length > 8 ? (
-        <TextInput value={q} onChangeText={setQ} placeholder="Search contacts…" placeholderTextColor={c.textMuted} style={{ backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.md, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, color: c.text }} />
+        <TextInput value={q} onChangeText={setQ} placeholder="Search contacts…" placeholderTextColor={c.textMuted} style={{ backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.md, paddingHorizontal: 10, paddingVertical: 6, fontSize: 12, color: c.text , fontFamily: font.regular}} />
       ) : null}
       <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
         {shown.map((ct) => (
           <Pressable key={ct.id} onPress={() => onPick(ct)} disabled={disabled} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.surfaceSoft, borderWidth: 1, borderColor: c.border, borderRadius: r.full, paddingLeft: 4, paddingRight: 10, paddingVertical: 4, opacity: disabled ? 0.5 : 1 }}>
             <Avatar name={ct.name} color={ct.avatarColor} size={22} />
-            <Text style={{ fontSize: 12, fontWeight: '600', color: c.text }}>{ct.name}</Text>
+            <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.text }}>{ct.name}</Text>
           </Pressable>
         ))}
-        {shown.length === 0 ? <Text style={{ fontSize: 11, color: c.textMuted }}>No matches</Text> : null}
+        {shown.length === 0 ? <Text style={{ fontSize: 11, color: c.textMuted , fontFamily: font.regular}}>No matches</Text> : null}
       </View>
     </View>
   );

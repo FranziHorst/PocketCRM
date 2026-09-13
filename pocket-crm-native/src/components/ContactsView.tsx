@@ -6,7 +6,7 @@ import { ContactsGrouping, useCrm } from '../store';
 import { Contact, CrmEvent } from '../../types';
 import { summarizeNotes } from '../ai';
 import { formatDate } from '../../crmHelpers';
-import { c, r } from '../theme';
+import { c, r, font } from '../theme';
 import { Avatar, Card } from './ui';
 
 type Group = { key: string; title: string; contacts: Contact[]; event?: CrmEvent };
@@ -111,14 +111,14 @@ export function ContactsView() {
             <Avatar name={ct.name} color={ct.avatarColor} size={40} />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }} numberOfLines={1}>{ct.name}</Text>
+                <Text style={{ fontSize: 14, fontFamily: font.display, color: c.text }} numberOfLines={1}>{ct.name}</Text>
                 {ct.isFavorite ? <Star size={12} color={c.gold} fill={c.gold} /> : null}
               </View>
-              <Text style={{ fontSize: 12, fontWeight: '500', color: c.textSecondary }} numberOfLines={1}>{ct.role} • {ct.company}</Text>
+              <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.textSecondary }} numberOfLines={1}>{ct.role} • {ct.company}</Text>
               {ct.location ? (
                 <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
                   <MapPin size={11} color={c.textMuted} />
-                  <Text style={{ fontSize: 11, color: c.textMuted }} numberOfLines={1}>{ct.location}</Text>
+                  <Text style={{ fontSize: 11, color: c.textMuted , fontFamily: font.regular}} numberOfLines={1}>{ct.location}</Text>
                 </View>
               ) : null}
             </View>
@@ -126,14 +126,14 @@ export function ContactsView() {
           {summary ? (
             <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, backgroundColor: c.accentSoft, padding: 10, borderRadius: r.lg, borderWidth: 1, borderColor: c.accentSoft2 }}>
               <Sparkles size={12} color={c.accentDark} style={{ marginTop: 2 }} />
-              <Text style={{ flex: 1, fontSize: 12, color: c.text2, lineHeight: 17 }} numberOfLines={2}>{summary}</Text>
+              <Text style={{ flex: 1, fontSize: 12, color: c.text2, lineHeight: 17 , fontFamily: font.regular}} numberOfLines={2}>{summary}</Text>
             </View>
           ) : null}
           {ct.tags.length > 0 && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
               {ct.tags.map((t) => (
                 <Pressable key={t} onPress={() => setTagFilter(t)} style={{ backgroundColor: c.line, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '500', color: c.textSecondary }}>#{t}</Text>
+                  <Text style={{ fontSize: 10, fontFamily: font.medium, color: c.textSecondary }}>#{t}</Text>
                 </Pressable>
               ))}
             </View>
@@ -146,25 +146,25 @@ export function ContactsView() {
   const renderHeader = (g: Group) => (
     <View style={{ gap: 4, marginTop: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: c.text }}>{g.title}</Text>
-        <Text style={{ fontSize: 11, color: c.textMuted }}>{g.contacts.length}</Text>
+        <Text style={{ fontSize: 13, fontFamily: font.display, color: c.text }}>{g.title}</Text>
+        <Text style={{ fontSize: 11, color: c.textMuted , fontFamily: font.regular}}>{g.contacts.length}</Text>
       </View>
       {g.event && (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
             <CalendarDays size={12} color={c.textSecondary} />
-            <Text style={{ fontSize: 11, color: c.textSecondary }}>{eventDateLabel(g.event)}{g.event.source === 'calendar' ? ' · synced from calendar' : ''}</Text>
+            <Text style={{ fontSize: 11, color: c.textSecondary , fontFamily: font.regular}}>{eventDateLabel(g.event)}{g.event.source === 'calendar' ? ' · synced from calendar' : ''}</Text>
           </View>
           {g.event.location ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
               <MapPin size={12} color={c.textSecondary} />
-              <Text style={{ fontSize: 11, color: c.textSecondary }}>{g.event.location}</Text>
+              <Text style={{ fontSize: 11, color: c.textSecondary , fontFamily: font.regular}}>{g.event.location}</Text>
             </View>
           ) : null}
           {g.event.networkAttendees ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentSoft, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 2 }}>
               <Users size={12} color={c.accentDark} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: c.accentDark }}>{g.event.networkAttendees} from your network {daysAgo(g.event.startDate) > 0 ? 'were there' : 'are going'}</Text>
+              <Text style={{ fontSize: 11, fontFamily: font.medium, color: c.accentDark }}>{g.event.networkAttendees} from your network {daysAgo(g.event.startDate) > 0 ? 'were there' : 'are going'}</Text>
             </View>
           ) : null}
         </View>
@@ -175,8 +175,8 @@ export function ContactsView() {
   return (
     <View style={{ gap: 14, paddingBottom: 24 }}>
       <View>
-        <Text style={{ fontSize: 18, fontWeight: '700', color: c.text }}>Network Contacts</Text>
-        <Text style={{ fontSize: 12, color: c.textSecondary }}>{contacts.length} connections</Text>
+        <Text style={{ fontSize: 18, fontFamily: font.display, color: c.text }}>Network Contacts</Text>
+        <Text style={{ fontSize: 12, color: c.textSecondary , fontFamily: font.regular}}>{contacts.length} connections</Text>
       </View>
 
       <View style={{ zIndex: 10 }}>
@@ -184,7 +184,7 @@ export function ContactsView() {
           <Search size={16} color={c.textMuted} />
           {filter ? (
             <Pressable onPress={() => setFilter(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentDark, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: c.onDark }}>{filter.label}</Text>
+              <Text style={{ fontSize: 11, fontFamily: font.medium, color: c.onDark }}>{filter.label}</Text>
               <X size={12} color={c.onDark} />
             </Pressable>
           ) : null}
@@ -217,8 +217,8 @@ export function ContactsView() {
                     </View>
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: c.text }} numberOfLines={1}>{sg.label}</Text>
-                    {sg.sub ? <Text style={{ fontSize: 10, color: c.textSecondary }} numberOfLines={1}>{sg.sub}</Text> : null}
+                    <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.text }} numberOfLines={1}>{sg.label}</Text>
+                    {sg.sub ? <Text style={{ fontSize: 10, color: c.textSecondary , fontFamily: font.regular}} numberOfLines={1}>{sg.sub}</Text> : null}
                   </View>
                 </Pressable>
               );
@@ -233,7 +233,7 @@ export function ContactsView() {
             const on = contactsGrouping === g.value;
             return (
               <Pressable key={g.value} onPress={() => setContactsGrouping(g.value)} style={{ flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center', backgroundColor: on ? c.surface : 'transparent' }}>
-                <Text style={{ fontSize: 12, fontWeight: on ? '700' : '500', color: on ? c.text : c.textSecondary }}>{g.label}</Text>
+                <Text style={{ fontSize: 13, fontFamily: on ? font.display : font.medium, color: on ? c.text : c.textSecondary}}>{g.label}</Text>
               </Pressable>
             );
           })}
@@ -243,15 +243,15 @@ export function ContactsView() {
           accessibilityLabel="Favorites only"
           style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 9, borderRadius: r.lg, borderWidth: 1, borderColor: favoritesOnly ? c.gold : c.border, backgroundColor: favoritesOnly ? c.goldSoft : c.surface }}>
           <Star size={14} color={c.gold} fill={favoritesOnly ? c.gold : 'transparent'} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: favoritesOnly ? c.text2 : c.textSecondary }}>Favorites</Text>
+          <Text style={{ fontSize: 12, fontFamily: font.medium, color: favoritesOnly ? c.text2 : c.textSecondary }}>Favorites</Text>
         </Pressable>
       </View>
 
       {filtered.length === 0 ? (
         <Card style={{ alignItems: 'center', padding: 28, gap: 6 }}>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: c.text2 }}>{favoritesOnly ? 'No favorites match' : 'No contacts match your filters'}</Text>
-          <Text style={{ fontSize: 12, color: c.textMuted }}>Try clearing search terms or create a new contact.</Text>
-          <Pressable onPress={resetFilters}><Text style={{ fontSize: 12, fontWeight: '600', color: c.accent, marginTop: 6 }}>Reset Filters</Text></Pressable>
+          <Text style={{ fontSize: 14, fontFamily: font.medium, color: c.text2 }}>{favoritesOnly ? 'No favorites match' : 'No contacts match your filters'}</Text>
+          <Text style={{ fontSize: 12, color: c.textMuted , fontFamily: font.regular}}>Try clearing search terms or create a new contact.</Text>
+          <Pressable onPress={resetFilters}><Text style={{ fontSize: 12, fontFamily: font.medium, color: c.accent, marginTop: 6 }}>Reset Filters</Text></Pressable>
         </Card>
       ) : (
         <View style={{ gap: 10 }}>

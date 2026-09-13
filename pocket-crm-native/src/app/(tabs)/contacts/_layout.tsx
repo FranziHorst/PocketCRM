@@ -1,5 +1,5 @@
 import { Stack } from 'expo-router';
-import { c } from '@/theme';
+import { c, font } from '@/theme';
 
 export default function ContactsStack() {
   return (
@@ -7,7 +7,7 @@ export default function ContactsStack() {
       screenOptions={{
         headerStyle: { backgroundColor: c.surface },
         headerTintColor: c.accent,
-        headerTitleStyle: { color: c.text, fontWeight: '700', fontSize: 15 },
+        headerTitleStyle: { color: c.text, fontFamily: font.display, fontSize: 16 },
         headerShadowVisible: false,
         headerBackButtonDisplayMode: 'minimal',
         contentStyle: { backgroundColor: c.bg },

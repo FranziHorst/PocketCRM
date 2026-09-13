@@ -18,7 +18,7 @@ export function DashboardView() {
       <View style={{ backgroundColor: c.text, borderRadius: r.xxl, padding: 22, gap: 18 }}>
         <View style={{ gap: 4 }}>
           <Text style={{ fontSize: 27, fontFamily: font.display, letterSpacing: -0.4, color: c.onDark }}>{greeting.text.replace(/!$/, '')}</Text>
-          <Text style={{ fontSize: 14, color: c.onDarkSoft, lineHeight: 20 }}>{greeting.subtext}</Text>
+          <Text style={{ fontSize: 14, color: c.onDarkSoft, lineHeight: 20 , fontFamily: font.regular}}>{greeting.subtext}</Text>
         </View>
         <View style={{ flexDirection: 'row', gap: 10 }}>
           <Stat value={pending.length} label={pending.length === 1 ? 'Open task' : 'Open tasks'} />
@@ -80,7 +80,7 @@ function Stat({ value, label }: { value: number; label: string }) {
   return (
     <View style={{ flex: 1, backgroundColor: 'rgba(253,251,247,0.08)', borderRadius: r.xl, paddingVertical: 12, paddingHorizontal: 14, gap: 2 }}>
       <Text style={{ fontSize: 28, fontFamily: font.display, letterSpacing: -0.6, color: c.onDark }}>{value}</Text>
-      <Text style={{ fontSize: 12, fontWeight: '500', color: c.onDarkSoft }}>{label}</Text>
+      <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.onDarkSoft }}>{label}</Text>
     </View>
   );
 }

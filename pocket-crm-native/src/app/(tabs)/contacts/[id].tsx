@@ -4,7 +4,7 @@ import { Stack, useLocalSearchParams, useRouter } from 'expo-router';
 import { MessageSquare, Pencil, Sparkles, Trash2 } from 'lucide-react-native';
 import { useCrm } from '@/store';
 import { Contact } from '../../../../types';
-import { c, r } from '@/theme';
+import { c, r, font } from '@/theme';
 import { Avatar, Btn, confirmAsync } from '@/components/ui';
 import { ContactDetails } from '@/components/ContactDetails';
 import { ContactFields } from '@/components/ContactFields';
@@ -21,7 +21,7 @@ export default function ContactPage() {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Stack.Screen options={{ title: 'Contact' }} />
-        <Text style={{ fontSize: 13, color: c.textSecondary }}>This contact no longer exists.</Text>
+        <Text style={{ fontSize: 13, color: c.textSecondary , fontFamily: font.regular}}>This contact no longer exists.</Text>
       </View>
     );
   }
@@ -35,7 +35,7 @@ export default function ContactPage() {
 
   const HeaderBtn = ({ label, onPress, bold }: { label: string; onPress: () => void; bold?: boolean }) => (
     <Pressable onPress={onPress} hitSlop={8} style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
-      <Text style={{ fontSize: 15, fontWeight: bold ? '700' : '500', color: c.accent }}>{label}</Text>
+      <Text style={{ fontSize: 16, fontFamily: bold ? font.display : font.medium, color: c.accentDark }}>{label}</Text>
     </Pressable>
   );
 
@@ -58,9 +58,9 @@ export default function ContactPage() {
           <>
             <View style={{ alignItems: 'center', gap: 8, paddingVertical: 8 }}>
               <Avatar name={contact.name} color={contact.avatarColor} size={72} radius={24} />
-              <Text style={{ fontSize: 20, fontWeight: '700', color: c.text, textAlign: 'center' }}>{contact.name}</Text>
+              <Text style={{ fontSize: 20, fontFamily: font.display, color: c.text, textAlign: 'center' }}>{contact.name}</Text>
               {(contact.role || contact.company) ? (
-                <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' }}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
+                <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' , fontFamily: font.regular}}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
               ) : null}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
                 <Btn label="Ice breaker" variant="violet" icon={<Sparkles size={14} color={c.accentDark} />} onPress={() => askIceBreakerFor(contact)} />
@@ -75,7 +75,7 @@ export default function ContactPage() {
 
             <Pressable onPress={remove} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10 }}>
               <Trash2 size={14} color={c.danger} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: c.danger }}>Delete contact</Text>
+              <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.danger }}>Delete contact</Text>
             </Pressable>
           </>
         )}

@@ -68,14 +68,14 @@ export function priorityColors(p: 'high' | 'medium' | 'low'): BadgeColors {
 }
 
 // Headline-Schrift: Satoshi (Fontshare, Lizenz in assets/fonts). Fließtext bleibt Systemschrift.
-export const font = { display: 'Satoshi-Bold', displayBlack: 'Satoshi-Black', medium: 'Satoshi-Medium' };
+export const font = { regular: 'Satoshi-Regular', medium: 'Satoshi-Medium', display: 'Satoshi-Bold', displayBlack: 'Satoshi-Black' };
 
 // Typo-Skala für Handy-Bildschirme.
 export const t = {
   title: { fontSize: 28, fontFamily: font.display, letterSpacing: -0.4, color: c.text },
   h2: { fontSize: 18, fontFamily: font.display, letterSpacing: -0.2, color: c.text },
-  body: { fontSize: 15, fontWeight: '400' as const, color: c.text, lineHeight: 21 },
-  bodyStrong: { fontSize: 15, fontWeight: '600' as const, color: c.text },
-  secondary: { fontSize: 13, fontWeight: '400' as const, color: c.textSecondary, lineHeight: 18 },
-  caption: { fontSize: 12, fontWeight: '500' as const, color: c.textMuted },
+  body: { fontSize: 15, fontFamily: font.regular, color: c.text, lineHeight: 21 },
+  bodyStrong: { fontSize: 15, fontFamily: font.medium, color: c.text },
+  secondary: { fontSize: 13, fontFamily: font.regular, color: c.textSecondary, lineHeight: 18 },
+  caption: { fontSize: 12, fontFamily: font.medium, color: c.textMuted },
 };

@@ -5,7 +5,7 @@ import {
 } from 'react-native';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react-native';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { avatarBg, BadgeColors, c, r, t } from '../theme';
+import { avatarBg, BadgeColors, c, r, t, font } from '../theme';
 
 export const Card = ({ children, style }: { children: React.ReactNode; style?: ViewStyle }) => (
   <View style={[s.card, style]}>{children}</View>
@@ -16,14 +16,14 @@ export const Avatar = ({ name, color, uri, size = 32, radius }: { name: string; 
     {uri ? (
       <Image source={{ uri }} style={{ width: size, height: size }} resizeMode="cover" />
     ) : (
-      <Text style={{ color: c.onDark, fontWeight: '700', fontSize: size * 0.42 }}>{name ? name.charAt(0) : '?'}</Text>
+      <Text style={{ color: c.onDark, fontFamily: font.display, fontSize: size * 0.42 }}>{name ? name.charAt(0) : '?'}</Text>
     )}
   </View>
 );
 
 export const Badge = ({ label, colors, small }: { label: string; colors: BadgeColors; small?: boolean }) => (
   <View style={{ backgroundColor: colors.bg, borderColor: colors.border, borderWidth: 1, borderRadius: r.full, paddingHorizontal: small ? 6 : 8, paddingVertical: 2 }}>
-    <Text style={{ color: colors.text, fontSize: small ? 9 : 10, fontWeight: '600' }}>{label}</Text>
+    <Text style={{ color: colors.text, fontSize: small ? 9 : 10, fontFamily: font.medium }}>{label}</Text>
   </View>
 );
 
@@ -31,7 +31,7 @@ export const Chip = ({ label, active, onPress, icon, activeBg = c.text, activeTe
   { label: string; active?: boolean; onPress: () => void; icon?: React.ReactNode; activeBg?: string; activeText?: string; bg?: string; text?: string }) => (
   <Pressable onPress={onPress} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, paddingHorizontal: 12, paddingVertical: 7, borderRadius: r.full, backgroundColor: active ? activeBg : bg, borderWidth: 1, borderColor: active ? activeBg : c.border }}>
     {icon}
-    <Text style={{ fontSize: 13, fontWeight: '500', color: active ? activeText : text }}>{label}</Text>
+    <Text style={{ fontSize: 13, fontFamily: font.medium, color: active ? activeText : text }}>{label}</Text>
   </Pressable>
 );
 
@@ -48,13 +48,13 @@ export const Btn = ({ label, onPress, icon, variant = 'primary', disabled, style
   return (
     <Pressable onPress={onPress} disabled={disabled} style={({ pressed }) => [{ flexDirection: 'row', alignItems: 'center', justifyContent: 'center', gap: 6, paddingHorizontal: 16, paddingVertical: 11, borderRadius: r.full, backgroundColor: v.bg, borderWidth: 1, borderColor: v.border, opacity: disabled ? 0.4 : pressed ? 0.85 : 1, transform: [{ scale: pressed ? 0.98 : 1 }] }, style]}>
       {icon}
-      <Text style={{ color: v.text, fontSize: 14, fontWeight: '600' }}>{label}</Text>
+      <Text style={{ color: v.text, fontSize: 14, fontFamily: font.medium }}>{label}</Text>
     </Pressable>
   );
 };
 
 export const Label = ({ children }: { children: React.ReactNode }) => (
-  <Text style={{ fontSize: 13, fontWeight: '600', color: c.text2, marginBottom: 6 }}>{children}</Text>
+  <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.text2, marginBottom: 6 }}>{children}</Text>
 );
 
 export const Input = (props: TextInputProps) => (
@@ -87,7 +87,7 @@ export const SectionTitle = ({ icon, children, right }: { icon?: React.ReactNode
   <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', marginBottom: 10 }}>
     <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
       {icon}
-      <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }}>{children}</Text>
+      <Text style={{ fontSize: 14, fontFamily: font.display, color: c.text }}>{children}</Text>
     </View>
     {right}
   </View>
@@ -104,8 +104,8 @@ export const SocialIcon = ({ kind, url, withLabel }: { kind: 'linkedin' | 'twitt
   }[kind];
   return (
     <Pressable onPress={() => openLink(url)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: m.bg, borderWidth: 1, borderColor: c.border, borderRadius: r.full, paddingHorizontal: withLabel ? 10 : 8, paddingVertical: 5 }}>
-      <Text style={{ fontSize: 11, fontWeight: '800', color: m.fg }}>{m.t}</Text>
-      {withLabel ? <Text style={{ fontSize: 11, fontWeight: '500', color: m.fg }}>{m.label}</Text> : null}
+      <Text style={{ fontSize: 11, fontFamily: font.display, color: m.fg }}>{m.t}</Text>
+      {withLabel ? <Text style={{ fontSize: 11, fontFamily: font.medium, color: m.fg }}>{m.label}</Text> : null}
     </Pressable>
   );
 };
@@ -138,8 +138,8 @@ export const ModalShell = ({ visible, onClose, title, subtitle, icon, children, 
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
             {icon}
             <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }}>{title}</Text>
-              {subtitle ? <Text style={{ fontSize: 11, color: c.textSecondary }}>{subtitle}</Text> : null}
+              <Text style={{ fontSize: 14, fontFamily: font.display, color: c.text }}>{title}</Text>
+              {subtitle ? <Text style={{ fontSize: 11, color: c.textSecondary , fontFamily: font.regular}}>{subtitle}</Text> : null}
             </View>
           </View>
           <Pressable onPress={onClose} hitSlop={8} style={{ padding: 4 }}>
@@ -178,7 +178,7 @@ export function SelectField({ label, value, options, onChange, placeholder = 'Se
     <View style={{ marginBottom: 10 }}>
       <Label>{label}</Label>
       <Pressable onPress={() => { setQuery(''); setOpen(!open); }} style={[s.input, { flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between', borderColor: open ? c.accent : c.border }]}>
-        <Text style={{ fontSize: 13, color: current ? c.text : c.textMuted }} numberOfLines={1}>{current ? current.label : placeholder}</Text>
+        <Text style={{ fontSize: 13, color: current ? c.text : c.textMuted , fontFamily: font.regular}} numberOfLines={1}>{current ? current.label : placeholder}</Text>
         {open ? <ChevronUp size={16} color={c.accent} /> : <ChevronDown size={16} color={c.textMuted} />}
       </Pressable>
 
@@ -191,15 +191,15 @@ export function SelectField({ label, value, options, onChange, placeholder = 'Se
           ) : null}
           <ScrollView style={{ maxHeight: 260 }} nestedScrollEnabled keyboardShouldPersistTaps="handled">
             {shown.length === 0 ? (
-              <Text style={{ fontSize: 12, color: c.textMuted, textAlign: 'center', padding: 16 }}>No matches</Text>
+              <Text style={{ fontSize: 12, color: c.textMuted, textAlign: 'center', padding: 16 , fontFamily: font.regular}}>No matches</Text>
             ) : shown.map((o, i) => {
               const on = o.value === value;
               return (
                 <Pressable key={o.value || '__none'} onPress={() => { onChange(o.value); setOpen(false); }}
                   style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: pressed ? c.surfaceSoft : on ? c.accentSoft : c.surface, borderTopWidth: i ? 1 : 0, borderTopColor: c.line })}>
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 13, fontWeight: on ? '700' : '500', color: on ? c.accentDark : c.text }}>{o.label}</Text>
-                    {o.sub ? <Text style={{ fontSize: 11, color: c.textSecondary, marginTop: 2 }}>{o.sub}</Text> : null}
+                    <Text style={{ fontSize: 14, fontFamily: on ? font.display : font.medium, color: on ? c.accentDark : c.text}}>{o.label}</Text>
+                    {o.sub ? <Text style={{ fontSize: 11, color: c.textSecondary, marginTop: 2 , fontFamily: font.regular}}>{o.sub}</Text> : null}
                   </View>
                   {on ? <Check size={16} color={c.accent} /> : null}
                 </Pressable>
@@ -247,7 +247,7 @@ export const Group = ({ children, style }: { children: React.ReactNode; style?: 
 export const TextBtn = ({ label, onPress, icon }: { label: string; onPress: () => void; icon?: React.ReactNode }) => (
   <Pressable onPress={onPress} hitSlop={8} style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 4, opacity: pressed ? 0.6 : 1 })}>
     {icon}
-    <Text style={{ fontSize: 15, fontWeight: '600', color: c.accentDark }}>{label}</Text>
+    <Text style={{ fontSize: 15, fontFamily: font.medium, color: c.accentDark }}>{label}</Text>
   </Pressable>
 );
 

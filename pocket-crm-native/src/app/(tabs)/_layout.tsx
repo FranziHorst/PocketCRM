@@ -1,7 +1,7 @@
 import { Tabs } from 'expo-router';
 import { LayoutDashboard, MessageSquareCode, User, Users } from 'lucide-react-native';
 import { useCrm } from '@/store';
-import { c } from '@/theme';
+import { c, font } from '@/theme';
 
 export default function TabsLayout() {
   const { pendingCount } = useCrm();
@@ -13,7 +13,7 @@ export default function TabsLayout() {
         sceneStyle: { backgroundColor: c.bg },
         tabBarActiveTintColor: c.accentDark,
         tabBarInactiveTintColor: c.textMuted,
-        tabBarLabelStyle: { fontSize: 11, fontWeight: '600' },
+        tabBarLabelStyle: { fontSize: 11, fontFamily: font.medium },
         tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.line },
       }}>
       <Tabs.Screen
@@ -22,7 +22,7 @@ export default function TabsLayout() {
           title: 'Home',
           tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} strokeWidth={1.8} />,
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: c.accentDark, color: c.onDark, fontSize: 10, fontWeight: '700' },
+          tabBarBadgeStyle: { backgroundColor: c.accentDark, color: c.onDark, fontSize: 10, fontFamily: font.display },
         }}
       />
       <Tabs.Screen name="contacts" options={{ title: 'Contacts', tabBarIcon: ({ color, size }) => <Users color={color} size={size} strokeWidth={1.8} /> }} />
