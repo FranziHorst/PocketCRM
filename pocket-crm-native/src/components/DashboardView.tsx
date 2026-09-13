@@ -3,8 +3,8 @@ import { Pressable, Text, View } from 'react-native';
 import { CheckCircle2, Circle, Plus, X } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { getGreeting } from '../../crmHelpers';
-import { c, t, priorityColors } from '../theme';
-import { Badge, Group, PageTitle, Row, SectionHeader, TextBtn } from './ui';
+import { c, r, t, priorityColors } from '../theme';
+import { Badge, Group, Row, SectionHeader, TextBtn } from './ui';
 import { AddContactCard } from './AddContactCard';
 
 export function DashboardView() {
@@ -15,11 +15,15 @@ export function DashboardView() {
 
   return (
     <View style={{ gap: 20 }}>
-      <PageTitle title={greeting.text.replace(/!$/, '')} subtitle={greeting.subtext} />
-
-      <View style={{ flexDirection: 'row', gap: 28 }}>
-        <Stat value={pending.length} label={pending.length === 1 ? 'open task' : 'open tasks'} />
-        <Stat value={contacts.length} label={contacts.length === 1 ? 'contact' : 'contacts'} />
+      <View style={{ backgroundColor: c.text, borderRadius: r.xxl, padding: 22, gap: 18 }}>
+        <View style={{ gap: 4 }}>
+          <Text style={{ fontSize: 26, fontWeight: '700', letterSpacing: -0.5, color: c.onDark }}>{greeting.text.replace(/!$/, '')}</Text>
+          <Text style={{ fontSize: 14, color: c.onDarkSoft, lineHeight: 20 }}>{greeting.subtext}</Text>
+        </View>
+        <View style={{ flexDirection: 'row', gap: 10 }}>
+          <Stat value={pending.length} label={pending.length === 1 ? 'Open task' : 'Open tasks'} />
+          <Stat value={contacts.length} label={contacts.length === 1 ? 'Contact' : 'Contacts'} />
+        </View>
       </View>
 
       <AddContactCard />
@@ -74,9 +78,9 @@ export function DashboardView() {
 
 function Stat({ value, label }: { value: number; label: string }) {
   return (
-    <View style={{ flexDirection: 'row', alignItems: 'baseline', gap: 6 }}>
-      <Text style={{ fontSize: 30, fontWeight: '700', letterSpacing: -1, color: c.text }}>{value}</Text>
-      <Text style={t.secondary}>{label}</Text>
+    <View style={{ flex: 1, backgroundColor: 'rgba(253,251,247,0.08)', borderRadius: r.xl, paddingVertical: 12, paddingHorizontal: 14, gap: 2 }}>
+      <Text style={{ fontSize: 26, fontWeight: '700', letterSpacing: -0.8, color: c.onDark }}>{value}</Text>
+      <Text style={{ fontSize: 12, fontWeight: '500', color: c.onDarkSoft }}>{label}</Text>
     </View>
   );
 }
