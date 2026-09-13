@@ -58,7 +58,10 @@ export function createRecognizer(handlers: RecognizerHandlers): Recognizer | nul
   if (!Ctor) return null;
 
   const recognition = new Ctor();
-  recognition.lang = 'en-US';
+  // Browser-Sprache nutzen statt fest Englisch - sonst presst die Erkennung z.B.
+  // gesprochenes Deutsch in aehnlich klingende englische Woerter statt es korrekt
+  // zu verstehen.
+  recognition.lang = (typeof navigator !== 'undefined' && navigator.language) || 'en-US';
   recognition.continuous = true;
   recognition.interimResults = true;
 
