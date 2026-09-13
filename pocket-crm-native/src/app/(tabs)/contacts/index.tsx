@@ -16,10 +16,10 @@ export default function Contacts() {
         accessibilityLabel="Add contact"
         style={({ pressed }) => ({
           position: 'absolute', right: 20, bottom: 20, width: 56, height: 56, borderRadius: 28,
-          backgroundColor: pressed ? c.indigo700 : c.indigo600, alignItems: 'center', justifyContent: 'center',
-          shadowColor: c.indigo900, shadowOpacity: 0.3, shadowRadius: 8, shadowOffset: { width: 0, height: 4 }, elevation: 6,
+          backgroundColor: pressed ? c.accentDeep : c.accentDark, alignItems: 'center', justifyContent: 'center',
+          shadowColor: c.accentDeep, shadowOpacity: 0.28, shadowRadius: 10, shadowOffset: { width: 0, height: 6 }, elevation: 6,
         })}>
-        <Plus size={26} color={c.white} strokeWidth={2.5} />
+        <Plus size={26} color={c.onDark} strokeWidth={2.5} />
       </Pressable>
     </View>
   );

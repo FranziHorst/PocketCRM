@@ -11,11 +11,11 @@ export default function TabsLayout() {
     <Tabs
       screenOptions={{
         header: () => <AppHeader />,
-        sceneStyle: { backgroundColor: c.slate50 },
-        tabBarActiveTintColor: c.indigo600,
-        tabBarInactiveTintColor: c.slate600,
+        sceneStyle: { backgroundColor: c.bg },
+        tabBarActiveTintColor: c.accentDark,
+        tabBarInactiveTintColor: c.textMuted,
         tabBarLabelStyle: { fontSize: 11, fontWeight: '500' },
-        tabBarStyle: { backgroundColor: c.white, borderTopColor: c.slate200 },
+        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.line },
       }}>
       <Tabs.Screen
         name="index"
@@ -23,7 +23,7 @@ export default function TabsLayout() {
           title: 'Dashboard',
           tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} />,
           tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
-          tabBarBadgeStyle: { backgroundColor: c.rose500, color: c.white, fontSize: 10, fontWeight: '700' },
+          tabBarBadgeStyle: { backgroundColor: c.accentDark, color: c.onDark, fontSize: 10, fontWeight: '700' },
         }}
       />
       <Tabs.Screen name="contacts" options={{ title: 'Contacts', headerShown: false, tabBarIcon: ({ color, size }) => <Users color={color} size={size} /> }} />

@@ -6,12 +6,12 @@ export default function ContactsStack() {
   return (
     <Stack
       screenOptions={{
-        headerStyle: { backgroundColor: c.white },
-        headerTintColor: c.indigo600,
-        headerTitleStyle: { color: c.slate900, fontWeight: '700', fontSize: 15 },
+        headerStyle: { backgroundColor: c.surface },
+        headerTintColor: c.accent,
+        headerTitleStyle: { color: c.text, fontWeight: '700', fontSize: 15 },
         headerShadowVisible: false,
         headerBackButtonDisplayMode: 'minimal',
-        contentStyle: { backgroundColor: c.slate50 },
+        contentStyle: { backgroundColor: c.bg },
       }}>
       <Stack.Screen name="index" options={{ header: () => <AppHeader /> }} />
       <Stack.Screen name="[id]" options={{ title: '' }} />

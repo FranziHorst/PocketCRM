@@ -49,7 +49,7 @@ export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: C
       <Field label="Phone Number" value={form.phone || ''} onChangeText={(v) => set({ phone: v })} placeholder="+1 (415) ..." keyboardType="phone-pad" />
       <Field label="Location" value={form.location || ''} onChangeText={(v) => set({ location: v })} placeholder="e.g., San Francisco, CA" />
 
-      <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900, marginBottom: 8 }}>Connected Social Media Profiles</Text>
+      <Text style={{ fontSize: 12, fontWeight: '700', color: c.text, marginBottom: 8 }}>Connected Social Media Profiles</Text>
       <Field label="LinkedIn" value={form.socialLinks.linkedin || ''} onChangeText={(v) => setSocial('linkedin', v)} placeholder="https://linkedin.com/in/..." autoCapitalize="none" />
       <Field label="X / Twitter" value={form.socialLinks.twitter || ''} onChangeText={(v) => setSocial('twitter', v)} placeholder="https://x.com/... or @handle" autoCapitalize="none" />
       <Field label="Instagram" value={form.socialLinks.instagram || ''} onChangeText={(v) => setSocial('instagram', v)} placeholder="https://instagram.com/..." autoCapitalize="none" />
@@ -66,38 +66,38 @@ export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: C
       <Field label="How we met / mutual connection" value={form.howWeMet} onChangeText={(v) => set({ howWeMet: v })} placeholder="e.g., SaaStr 2026 conference panel on agentic UX" />
       <Field label="Conversation Notes, Interests & Follow-up Context" value={form.notes} onChangeText={(v) => set({ notes: v })} multiline placeholder="Key discussion topics, what they care about, personal details, collaboration ideas..." />
 
-      <View style={{ backgroundColor: c.slate50, padding: 14, borderRadius: r.xl, borderWidth: 1, borderColor: c.slate200, gap: 10 }}>
+      <View style={{ backgroundColor: c.surfaceSoft, padding: 14, borderRadius: r.xl, borderWidth: 1, borderColor: c.border, gap: 10 }}>
         <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-            <Tag size={14} color={c.indigo600} />
-            <Text style={{ fontSize: 12, fontWeight: '700', color: c.slate900 }}>Tags & Organization</Text>
+            <Tag size={14} color={c.accent} />
+            <Text style={{ fontSize: 12, fontWeight: '700', color: c.text }}>Tags & Organization</Text>
           </View>
-          <Pressable onPress={handleSuggest} disabled={suggesting} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.violet600, paddingHorizontal: 10, paddingVertical: 5, borderRadius: r.md, opacity: suggesting ? 0.5 : 1 }}>
-            {suggesting ? <ActivityIndicator size="small" color={c.white} /> : <Sparkles size={12} color={c.amber300} />}
-            <Text style={{ fontSize: 11, fontWeight: '600', color: c.white }}>{suggesting ? 'AI Thinking...' : 'Suggest AI Tags'}</Text>
+          <Pressable onPress={handleSuggest} disabled={suggesting} style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.accentDark, paddingHorizontal: 10, paddingVertical: 5, borderRadius: r.md, opacity: suggesting ? 0.5 : 1 }}>
+            {suggesting ? <ActivityIndicator size="small" color={c.onDark} /> : <Sparkles size={12} color={c.onDark} />}
+            <Text style={{ fontSize: 11, fontWeight: '600', color: c.onDark }}>{suggesting ? 'AI Thinking...' : 'Suggest AI Tags'}</Text>
           </Pressable>
         </View>
 
-        {aiError ? <Text style={{ fontSize: 11, color: c.rose600, backgroundColor: c.rose50, padding: 8, borderRadius: r.md }}>{aiError}</Text> : null}
+        {aiError ? <Text style={{ fontSize: 11, color: c.danger, backgroundColor: c.dangerSoft, padding: 8, borderRadius: r.md }}>{aiError}</Text> : null}
 
         {suggestions.length > 0 && (
-          <View style={{ backgroundColor: c.indigo50, borderWidth: 1, borderColor: c.indigo200, borderRadius: r.lg, padding: 10, gap: 6 }}>
+          <View style={{ backgroundColor: c.accentSoft, borderWidth: 1, borderColor: c.accentBorder, borderRadius: r.lg, padding: 10, gap: 6 }}>
             <View style={{ flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-              <Text style={{ fontSize: 11, fontWeight: '700', color: c.indigo900 }}>Suggested Tags:</Text>
+              <Text style={{ fontSize: 11, fontWeight: '700', color: c.accentDeep }}>Suggested Tags:</Text>
               <Pressable onPress={() => { set({ tags: Array.from(new Set([...form.tags, ...selected])) }); setSuggestions([]); setSelected([]); }} style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-                <Check size={12} color={c.indigo600} />
-                <Text style={{ fontSize: 12, fontWeight: '700', color: c.indigo600 }}>Add Selected ({selected.length})</Text>
+                <Check size={12} color={c.accent} />
+                <Text style={{ fontSize: 12, fontWeight: '700', color: c.accent }}>Add Selected ({selected.length})</Text>
               </Pressable>
             </View>
             {suggestions.map((sg) => {
               const on = selected.includes(sg.tag);
               return (
-                <Pressable key={sg.tag} onPress={() => setSelected(on ? selected.filter((t) => t !== sg.tag) : [...selected, sg.tag])} style={{ padding: 8, borderRadius: r.md, borderWidth: 1, borderColor: on ? c.indigo700 : c.slate200, backgroundColor: on ? c.indigo600 : c.white, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
-                  <Text style={{ fontSize: 12, color: on ? c.white : c.slate700 }}>
+                <Pressable key={sg.tag} onPress={() => setSelected(on ? selected.filter((t) => t !== sg.tag) : [...selected, sg.tag])} style={{ padding: 8, borderRadius: r.md, borderWidth: 1, borderColor: on ? c.accentDark : c.border, backgroundColor: on ? c.accent : c.surface, flexDirection: 'row', alignItems: 'center', justifyContent: 'space-between' }}>
+                  <Text style={{ fontSize: 12, color: on ? c.surface : c.text2 }}>
                     <Text style={{ fontWeight: '600' }}>#{sg.tag}</Text>
-                    <Text style={{ fontSize: 10, color: on ? c.indigo100 : c.slate400 }}>  • {sg.reason}</Text>
+                    <Text style={{ fontSize: 10, color: on ? c.accentSoft2 : c.textMuted }}>  • {sg.reason}</Text>
                   </Text>
-                  <Text style={{ fontSize: 12, fontWeight: '700', color: on ? c.white : c.slate700 }}>{on ? '✓' : '+'}</Text>
+                  <Text style={{ fontSize: 12, fontWeight: '700', color: on ? c.surface : c.text2 }}>{on ? '✓' : '+'}</Text>
                 </Pressable>
               );
             })}
@@ -106,10 +106,10 @@ export function ContactFields({ form, setForm }: { form: Contact; setForm: (f: C
 
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 6 }}>
           {form.tags.map((t) => (
-            <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.white, borderWidth: 1, borderColor: c.slate200, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontWeight: '500', color: c.slate800 }}>#{t}</Text>
+            <View key={t} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 3 }}>
+              <Text style={{ fontSize: 11, fontWeight: '500', color: c.text }}>#{t}</Text>
               <Pressable onPress={() => set({ tags: form.tags.filter((x) => x !== t) })} hitSlop={6}>
-                <Text style={{ fontSize: 13, color: c.slate400 }}>×</Text>
+                <Text style={{ fontSize: 13, color: c.textMuted }}>×</Text>
               </Pressable>
             </View>
           ))}

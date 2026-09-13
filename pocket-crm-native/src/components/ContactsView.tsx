@@ -111,24 +111,29 @@ export function ContactsView() {
             <Avatar name={ct.name} color={ct.avatarColor} size={40} />
             <View style={{ flex: 1 }}>
               <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
-                <Text style={{ fontSize: 14, fontWeight: '700', color: c.slate900 }} numberOfLines={1}>{ct.name}</Text>
-                {ct.isFavorite ? <Star size={12} color={c.amber500} fill={c.amber500} /> : null}
+                <Text style={{ fontSize: 14, fontWeight: '700', color: c.text }} numberOfLines={1}>{ct.name}</Text>
+                {ct.isFavorite ? <Star size={12} color={c.gold} fill={c.gold} /> : null}
               </View>
-              <Text style={{ fontSize: 12, fontWeight: '500', color: c.slate600 }} numberOfLines={1}>{ct.role} • {ct.company}</Text>
-              {ct.location ? <Text style={{ fontSize: 11, color: c.slate400 }} numberOfLines={1}>📍 {ct.location}</Text> : null}
+              <Text style={{ fontSize: 12, fontWeight: '500', color: c.textSecondary }} numberOfLines={1}>{ct.role} • {ct.company}</Text>
+              {ct.location ? (
+                <View style={{ flexDirection: 'row', alignItems: 'center', gap: 3 }}>
+                  <MapPin size={11} color={c.textMuted} />
+                  <Text style={{ fontSize: 11, color: c.textMuted }} numberOfLines={1}>{ct.location}</Text>
+                </View>
+              ) : null}
             </View>
           </View>
           {summary ? (
-            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, backgroundColor: c.violet50, padding: 10, borderRadius: r.lg, borderWidth: 1, borderColor: c.violet100 }}>
-              <Sparkles size={12} color={c.violet600} style={{ marginTop: 2 }} />
-              <Text style={{ flex: 1, fontSize: 12, color: c.slate700, lineHeight: 17 }} numberOfLines={2}>{summary}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'flex-start', gap: 6, backgroundColor: c.accentSoft, padding: 10, borderRadius: r.lg, borderWidth: 1, borderColor: c.accentSoft2 }}>
+              <Sparkles size={12} color={c.accentDark} style={{ marginTop: 2 }} />
+              <Text style={{ flex: 1, fontSize: 12, color: c.text2, lineHeight: 17 }} numberOfLines={2}>{summary}</Text>
             </View>
           ) : null}
           {ct.tags.length > 0 && (
             <View style={{ flexDirection: 'row', flexWrap: 'wrap', gap: 4 }}>
               {ct.tags.map((t) => (
-                <Pressable key={t} onPress={() => setTagFilter(t)} style={{ backgroundColor: c.slate100, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
-                  <Text style={{ fontSize: 10, fontWeight: '500', color: c.slate600 }}>#{t}</Text>
+                <Pressable key={t} onPress={() => setTagFilter(t)} style={{ backgroundColor: c.line, borderRadius: 6, paddingHorizontal: 8, paddingVertical: 2 }}>
+                  <Text style={{ fontSize: 10, fontWeight: '500', color: c.textSecondary }}>#{t}</Text>
                 </Pressable>
               ))}
             </View>
@@ -141,25 +146,25 @@ export function ContactsView() {
   const renderHeader = (g: Group) => (
     <View style={{ gap: 4, marginTop: 6 }}>
       <View style={{ flexDirection: 'row', alignItems: 'baseline', justifyContent: 'space-between' }}>
-        <Text style={{ fontSize: 13, fontWeight: '700', color: c.slate900 }}>{g.title}</Text>
-        <Text style={{ fontSize: 11, color: c.slate400 }}>{g.contacts.length}</Text>
+        <Text style={{ fontSize: 13, fontWeight: '700', color: c.text }}>{g.title}</Text>
+        <Text style={{ fontSize: 11, color: c.textMuted }}>{g.contacts.length}</Text>
       </View>
       {g.event && (
         <View style={{ flexDirection: 'row', flexWrap: 'wrap', alignItems: 'center', gap: 10 }}>
           <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-            <CalendarDays size={12} color={c.slate500} />
-            <Text style={{ fontSize: 11, color: c.slate500 }}>{eventDateLabel(g.event)}{g.event.source === 'calendar' ? ' · synced from calendar' : ''}</Text>
+            <CalendarDays size={12} color={c.textSecondary} />
+            <Text style={{ fontSize: 11, color: c.textSecondary }}>{eventDateLabel(g.event)}{g.event.source === 'calendar' ? ' · synced from calendar' : ''}</Text>
           </View>
           {g.event.location ? (
             <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4 }}>
-              <MapPin size={12} color={c.slate500} />
-              <Text style={{ fontSize: 11, color: c.slate500 }}>{g.event.location}</Text>
+              <MapPin size={12} color={c.textSecondary} />
+              <Text style={{ fontSize: 11, color: c.textSecondary }}>{g.event.location}</Text>
             </View>
           ) : null}
           {g.event.networkAttendees ? (
-            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.emerald50, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 2 }}>
-              <Users size={12} color={c.emerald700} />
-              <Text style={{ fontSize: 11, fontWeight: '600', color: c.emerald700 }}>{g.event.networkAttendees} from your network {daysAgo(g.event.startDate) > 0 ? 'were there' : 'are going'}</Text>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentSoft, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 2 }}>
+              <Users size={12} color={c.accentDark} />
+              <Text style={{ fontSize: 11, fontWeight: '600', color: c.accentDark }}>{g.event.networkAttendees} from your network {daysAgo(g.event.startDate) > 0 ? 'were there' : 'are going'}</Text>
             </View>
           ) : null}
         </View>
@@ -170,17 +175,17 @@ export function ContactsView() {
   return (
     <View style={{ gap: 14, paddingBottom: 24 }}>
       <View>
-        <Text style={{ fontSize: 18, fontWeight: '700', color: c.slate900 }}>Network Contacts</Text>
-        <Text style={{ fontSize: 12, color: c.slate500 }}>{contacts.length} connections</Text>
+        <Text style={{ fontSize: 18, fontWeight: '700', color: c.text }}>Network Contacts</Text>
+        <Text style={{ fontSize: 12, color: c.textSecondary }}>{contacts.length} connections</Text>
       </View>
 
       <View style={{ zIndex: 10 }}>
-        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.white, borderWidth: 1, borderColor: showSuggestions && suggestions.length ? c.indigo500 : c.slate200, borderRadius: r.lg, paddingHorizontal: 12 }}>
-          <Search size={16} color={c.slate400} />
+        <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, backgroundColor: c.surface, borderWidth: 1, borderColor: showSuggestions && suggestions.length ? c.accent : c.border, borderRadius: r.lg, paddingHorizontal: 12 }}>
+          <Search size={16} color={c.textMuted} />
           {filter ? (
-            <Pressable onPress={() => setFilter(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.indigo600, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 3 }}>
-              <Text style={{ fontSize: 11, fontWeight: '600', color: c.white }}>{filter.label}</Text>
-              <X size={12} color={c.white} />
+            <Pressable onPress={() => setFilter(null)} style={{ flexDirection: 'row', alignItems: 'center', gap: 4, backgroundColor: c.accentDark, borderRadius: r.full, paddingHorizontal: 8, paddingVertical: 3 }}>
+              <Text style={{ fontSize: 11, fontWeight: '600', color: c.onDark }}>{filter.label}</Text>
+              <X size={12} color={c.onDark} />
             </Pressable>
           ) : null}
           <TextInput
@@ -188,14 +193,14 @@ export function ContactsView() {
             onChangeText={(v) => { setSearchQuery(v); setShowSuggestions(true); }}
             onFocus={() => setShowSuggestions(true)}
             placeholder={filter ? 'Search within…' : 'Search people, companies, tags, events…'}
-            placeholderTextColor={c.slate400}
-            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 4, fontSize: 12, color: c.slate900 }}
+            placeholderTextColor={c.textMuted}
+            style={{ flex: 1, paddingVertical: 10, paddingHorizontal: 4, fontSize: 12, color: c.text }}
           />
-          {searchQuery ? <Pressable onPress={() => { setSearchQuery(''); setShowSuggestions(false); }} hitSlop={6}><X size={14} color={c.slate400} /></Pressable> : null}
+          {searchQuery ? <Pressable onPress={() => { setSearchQuery(''); setShowSuggestions(false); }} hitSlop={6}><X size={14} color={c.textMuted} /></Pressable> : null}
         </View>
 
         {showSuggestions && suggestions.length > 0 && (
-          <View style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 6, backgroundColor: c.white, borderWidth: 1, borderColor: c.slate200, borderRadius: r.lg, overflow: 'hidden', shadowColor: c.slate900, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
+          <View style={{ position: 'absolute', top: '100%', left: 0, right: 0, marginTop: 6, backgroundColor: c.surface, borderWidth: 1, borderColor: c.border, borderRadius: r.lg, overflow: 'hidden', shadowColor: c.text, shadowOpacity: 0.08, shadowRadius: 12, shadowOffset: { width: 0, height: 6 }, elevation: 8 }}>
             {suggestions.map((sg, i) => {
               const Icon = sg.kind === 'contact' ? User : sg.kind === 'company' ? Building2 : sg.kind === 'tag' ? Tag : CalendarDays;
               return (
@@ -205,15 +210,15 @@ export function ContactsView() {
                     if (sg.contact) { openContact(sg.contact); setShowSuggestions(false); return; }
                     if (sg.filter) { setFilter(sg.filter); setSearchQuery(''); setShowSuggestions(false); }
                   }}
-                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: pressed ? c.slate50 : c.white, borderTopWidth: i ? 1 : 0, borderTopColor: c.slate100 })}>
+                  style={({ pressed }) => ({ flexDirection: 'row', alignItems: 'center', gap: 10, paddingHorizontal: 12, paddingVertical: 10, backgroundColor: pressed ? c.surfaceSoft : c.surface, borderTopWidth: i ? 1 : 0, borderTopColor: c.line })}>
                   {sg.contact ? <Avatar name={sg.contact.name} color={sg.contact.avatarColor} size={26} /> : (
-                    <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.slate100, alignItems: 'center', justifyContent: 'center' }}>
-                      <Icon size={13} color={c.slate600} />
+                    <View style={{ width: 26, height: 26, borderRadius: 13, backgroundColor: c.line, alignItems: 'center', justifyContent: 'center' }}>
+                      <Icon size={13} color={c.textSecondary} />
                     </View>
                   )}
                   <View style={{ flex: 1 }}>
-                    <Text style={{ fontSize: 12, fontWeight: '600', color: c.slate900 }} numberOfLines={1}>{sg.label}</Text>
-                    {sg.sub ? <Text style={{ fontSize: 10, color: c.slate500 }} numberOfLines={1}>{sg.sub}</Text> : null}
+                    <Text style={{ fontSize: 12, fontWeight: '600', color: c.text }} numberOfLines={1}>{sg.label}</Text>
+                    {sg.sub ? <Text style={{ fontSize: 10, color: c.textSecondary }} numberOfLines={1}>{sg.sub}</Text> : null}
                   </View>
                 </Pressable>
               );
@@ -223,12 +228,12 @@ export function ContactsView() {
       </View>
 
       <View style={{ flexDirection: 'row', alignItems: 'center', gap: 8 }}>
-        <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.slate100, borderRadius: r.lg, padding: 3 }}>
+        <View style={{ flex: 1, flexDirection: 'row', backgroundColor: c.line, borderRadius: r.lg, padding: 3 }}>
           {GROUPINGS.map((g) => {
             const on = contactsGrouping === g.value;
             return (
-              <Pressable key={g.value} onPress={() => setContactsGrouping(g.value)} style={{ flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center', backgroundColor: on ? c.white : 'transparent' }}>
-                <Text style={{ fontSize: 12, fontWeight: on ? '700' : '500', color: on ? c.slate900 : c.slate500 }}>{g.label}</Text>
+              <Pressable key={g.value} onPress={() => setContactsGrouping(g.value)} style={{ flex: 1, paddingVertical: 7, borderRadius: 9, alignItems: 'center', backgroundColor: on ? c.surface : 'transparent' }}>
+                <Text style={{ fontSize: 12, fontWeight: on ? '700' : '500', color: on ? c.text : c.textSecondary }}>{g.label}</Text>
               </Pressable>
             );
           })}
@@ -236,17 +241,17 @@ export function ContactsView() {
         <Pressable
           onPress={() => setFavoritesOnly(!favoritesOnly)}
           accessibilityLabel="Favorites only"
-          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 9, borderRadius: r.lg, borderWidth: 1, borderColor: favoritesOnly ? c.amber400 : c.slate200, backgroundColor: favoritesOnly ? c.amber50 : c.white }}>
-          <Star size={14} color={c.amber500} fill={favoritesOnly ? c.amber500 : 'transparent'} />
-          <Text style={{ fontSize: 12, fontWeight: '600', color: favoritesOnly ? c.amber800 : c.slate600 }}>Favorites</Text>
+          style={{ flexDirection: 'row', alignItems: 'center', gap: 5, paddingHorizontal: 12, paddingVertical: 9, borderRadius: r.lg, borderWidth: 1, borderColor: favoritesOnly ? c.gold : c.border, backgroundColor: favoritesOnly ? c.goldSoft : c.surface }}>
+          <Star size={14} color={c.gold} fill={favoritesOnly ? c.gold : 'transparent'} />
+          <Text style={{ fontSize: 12, fontWeight: '600', color: favoritesOnly ? c.text2 : c.textSecondary }}>Favorites</Text>
         </Pressable>
       </View>
 
       {filtered.length === 0 ? (
         <Card style={{ alignItems: 'center', padding: 28, gap: 6 }}>
-          <Text style={{ fontSize: 14, fontWeight: '600', color: c.slate700 }}>{favoritesOnly ? 'No favorites match' : 'No contacts match your filters'}</Text>
-          <Text style={{ fontSize: 12, color: c.slate400 }}>Try clearing search terms or create a new contact.</Text>
-          <Pressable onPress={resetFilters}><Text style={{ fontSize: 12, fontWeight: '600', color: c.indigo600, marginTop: 6 }}>Reset Filters</Text></Pressable>
+          <Text style={{ fontSize: 14, fontWeight: '600', color: c.text2 }}>{favoritesOnly ? 'No favorites match' : 'No contacts match your filters'}</Text>
+          <Text style={{ fontSize: 12, color: c.textMuted }}>Try clearing search terms or create a new contact.</Text>
+          <Pressable onPress={resetFilters}><Text style={{ fontSize: 12, fontWeight: '600', color: c.accent, marginTop: 6 }}>Reset Filters</Text></Pressable>
         </Card>
       ) : (
         <View style={{ gap: 10 }}>

@@ -32,7 +32,7 @@ function Sheet({ initial, onClose }: { initial: Contact; onClose: () => void }) 
       onClose={onClose}
       title="New contact"
       subtitle="Who did you meet?"
-      icon={<View style={{ width: 36, height: 36, borderRadius: r.lg, backgroundColor: c.indigo600, alignItems: 'center', justifyContent: 'center' }}><UserPlus size={16} color={c.white} /></View>}
+      icon={<View style={{ width: 36, height: 36, borderRadius: r.lg, backgroundColor: c.accentDark, alignItems: 'center', justifyContent: 'center' }}><UserPlus size={16} color={c.onDark} /></View>}
       footer={
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
           <Btn label="Cancel" variant="ghost" onPress={onClose} />

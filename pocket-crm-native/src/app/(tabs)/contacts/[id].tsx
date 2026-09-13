@@ -21,7 +21,7 @@ export default function ContactPage() {
     return (
       <View style={{ flex: 1, alignItems: 'center', justifyContent: 'center', padding: 24 }}>
         <Stack.Screen options={{ title: 'Contact' }} />
-        <Text style={{ fontSize: 13, color: c.slate500 }}>This contact no longer exists.</Text>
+        <Text style={{ fontSize: 13, color: c.textSecondary }}>This contact no longer exists.</Text>
       </View>
     );
   }
@@ -35,7 +35,7 @@ export default function ContactPage() {
 
   const HeaderBtn = ({ label, onPress, bold }: { label: string; onPress: () => void; bold?: boolean }) => (
     <Pressable onPress={onPress} hitSlop={8} style={{ paddingHorizontal: 6, paddingVertical: 4 }}>
-      <Text style={{ fontSize: 15, fontWeight: bold ? '700' : '500', color: c.indigo600 }}>{label}</Text>
+      <Text style={{ fontSize: 15, fontWeight: bold ? '700' : '500', color: c.accent }}>{label}</Text>
     </Pressable>
   );
 
@@ -58,24 +58,24 @@ export default function ContactPage() {
           <>
             <View style={{ alignItems: 'center', gap: 8, paddingVertical: 8 }}>
               <Avatar name={contact.name} color={contact.avatarColor} size={72} radius={24} />
-              <Text style={{ fontSize: 20, fontWeight: '700', color: c.slate900, textAlign: 'center' }}>{contact.name}</Text>
+              <Text style={{ fontSize: 20, fontWeight: '700', color: c.text, textAlign: 'center' }}>{contact.name}</Text>
               {(contact.role || contact.company) ? (
-                <Text style={{ fontSize: 13, color: c.slate600, textAlign: 'center' }}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
+                <Text style={{ fontSize: 13, color: c.textSecondary, textAlign: 'center' }}>{[contact.role, contact.company].filter(Boolean).join(' • ')}</Text>
               ) : null}
               <View style={{ flexDirection: 'row', gap: 8, marginTop: 4 }}>
-                <Btn label="Ice breaker" variant="violet" icon={<Sparkles size={14} color={c.violet700} />} onPress={() => askIceBreakerFor(contact)} />
-                <Btn label="Ask AI" variant="violet" icon={<MessageSquare size={14} color={c.violet700} />} onPress={() => askAIForContact(contact)} />
-                <Btn label="Edit" variant="soft" icon={<Pencil size={14} color={c.indigo700} />} onPress={startEdit} />
+                <Btn label="Ice breaker" variant="violet" icon={<Sparkles size={14} color={c.accentDark} />} onPress={() => askIceBreakerFor(contact)} />
+                <Btn label="Ask AI" variant="violet" icon={<MessageSquare size={14} color={c.accentDark} />} onPress={() => askAIForContact(contact)} />
+                <Btn label="Edit" variant="soft" icon={<Pencil size={14} color={c.accentDark} />} onPress={startEdit} />
               </View>
             </View>
 
-            <View style={{ backgroundColor: c.white, borderRadius: r.xl, borderWidth: 1, borderColor: c.slate200, padding: 16 }}>
+            <View style={{ backgroundColor: c.surface, borderRadius: r.xl, borderWidth: 1, borderColor: c.border, padding: 16 }}>
               <ContactDetails contact={contact} />
             </View>
 
             <Pressable onPress={remove} style={{ alignSelf: 'center', flexDirection: 'row', alignItems: 'center', gap: 6, paddingVertical: 10 }}>
-              <Trash2 size={14} color={c.rose600} />
-              <Text style={{ fontSize: 13, fontWeight: '600', color: c.rose600 }}>Delete contact</Text>
+              <Trash2 size={14} color={c.danger} />
+              <Text style={{ fontSize: 13, fontWeight: '600', color: c.danger }}>Delete contact</Text>
             </Pressable>
           </>
         )}
