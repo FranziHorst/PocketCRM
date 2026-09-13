@@ -1,0 +1,20 @@
+# Betriebssystem
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Abhängigkeiten
+node_modules/
+
+# Lokale Umgebungsvariablen (API-Keys) – nie committen
+.env
+.env.local
+.env.*.local
+
+# Logs
+*.log
+npm-debug.*
+
+# Editoren
+.idea/
+*.swp

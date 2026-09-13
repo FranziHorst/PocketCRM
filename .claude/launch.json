@@ -2,6 +2,13 @@
   "version": "0.0.1",
   "configurations": [
     {
+      "name": "pocket-crm-native-web",
+      "runtimeExecutable": "npx",
+      "runtimeArgs": ["expo", "start", "--web"],
+      "port": 8081,
+      "cwd": "pocket-crm-native"
+    },
+    {
       "name": "pocket-crm-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],

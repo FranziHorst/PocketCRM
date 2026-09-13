@@ -1,0 +1,33 @@
+import { Tabs } from 'expo-router';
+import { LayoutDashboard, MessageSquareCode, User, Users } from 'lucide-react-native';
+import { useCrm } from '@/store';
+import { c, font } from '@/theme';
+
+export default function TabsLayout() {
+  const { pendingCount } = useCrm();
+
+  return (
+    <Tabs
+      screenOptions={{
+        headerShown: false,
+        sceneStyle: { backgroundColor: c.bg },
+        tabBarActiveTintColor: c.accentDark,
+        tabBarInactiveTintColor: c.textMuted,
+        tabBarLabelStyle: { fontSize: 11, fontFamily: font.medium },
+        tabBarStyle: { backgroundColor: c.surface, borderTopColor: c.line },
+      }}>
+      <Tabs.Screen
+        name="index"
+        options={{
+          title: 'Home',
+          tabBarIcon: ({ color, size }) => <LayoutDashboard color={color} size={size} strokeWidth={1.8} />,
+          tabBarBadge: pendingCount > 0 ? pendingCount : undefined,
+          tabBarBadgeStyle: { backgroundColor: c.accentDark, color: c.onDark, fontSize: 10, fontFamily: font.display },
+        }}
+      />
+      <Tabs.Screen name="contacts" options={{ title: 'Contacts', tabBarIcon: ({ color, size }) => <Users color={color} size={size} strokeWidth={1.8} /> }} />
+      <Tabs.Screen name="aichat" options={{ title: 'Assistant', tabBarIcon: ({ color, size }) => <MessageSquareCode color={color} size={size} strokeWidth={1.8} /> }} />
+      <Tabs.Screen name="profile" options={{ title: 'Profile', tabBarIcon: ({ color, size }) => <User color={color} size={size} strokeWidth={1.8} /> }} />
+    </Tabs>
+  );
+}
