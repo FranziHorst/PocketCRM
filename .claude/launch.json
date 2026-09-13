@@ -5,7 +5,7 @@
       "name": "pocket-crm-dev",
       "runtimeExecutable": "npm",
       "runtimeArgs": ["run", "dev"],
-      "port": 5173,
+      "port": 3000,
       "cwd": "pocket-crm"
     }
   ]
