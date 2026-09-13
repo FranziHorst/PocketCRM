@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { Pressable, Text, TextInput, View } from 'react-native';
+import { ActivityIndicator, Pressable, Text, TextInput, View } from 'react-native';
 import { Mic, Square } from 'lucide-react-native';
 import { useCrm } from '../store';
-import { extractContact } from '../ai';
+import { extractContactWithAI, type ExtractedContact } from '../ai';
 import type { CrmEvent } from '../../types';
 import { createRecognizer, isSpeechSupported, unsupportedReason, type Recognizer } from '../speech';
 import { c, r, font } from '../theme';
@@ -15,21 +15,21 @@ export function SpeakToAIModal() {
     <SpeakSheet
       events={events}
       onClose={() => setSpeakOpen(false)}
-      onResult={(text) => {
-        const extracted = extractContact(text, events);
+      onResult={(extracted) => {
         const eventId = extracted.eventId ?? (extracted.newEventName ? addManualEvent(extracted.newEventName).id : undefined);
         setSpeakOpen(false);
-        openAddContact({ name: extracted.name, role: extracted.role, company: extracted.company, howWeMet: extracted.howWeMet, notes: extracted.notes, eventId });
+        openAddContact({ name: extracted.name, role: extracted.role, company: extracted.company, howWeMet: extracted.howWeMet, notes: extracted.notes, location: extracted.location, eventId });
       }}
     />
   );
 }
 
-function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose: () => void; onResult: (text: string) => void }) {
+function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose: () => void; onResult: (extracted: ExtractedContact) => void }) {
   const supported = isSpeechSupported();
   const [listening, setListening] = useState(false);
   const [text, setText] = useState('');
   const [interim, setInterim] = useState('');
+  const [extracting, setExtracting] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const recognizer = useRef<Recognizer | null>(null);
 
@@ -58,14 +58,17 @@ function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose
     }
   };
 
-  const preview = extractContact(text, events);
-  const fields: { label: string; value: string }[] = [
-    { label: 'Name', value: preview.name },
-    { label: 'Role', value: preview.role },
-    { label: 'Company', value: preview.company },
-    { label: 'Met at', value: preview.howWeMet },
-  ];
-  const found = fields.filter((f) => f.value);
+  // Die KI ordnet erst beim Weiter zu - ein Aufruf pro Notiz, nicht pro Tastendruck.
+  const continueWithAI = async () => {
+    if (listening) stop();
+    setError(null);
+    setExtracting(true);
+    try {
+      onResult(await extractContactWithAI(text, events));
+    } finally {
+      setExtracting(false);
+    }
+  };
 
   return (
     <ModalShell
@@ -76,15 +79,20 @@ function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose
       icon={<Mic size={16} color={c.accentDark} />}
       footer={
         <View style={{ flex: 1, flexDirection: 'row', justifyContent: 'flex-end', gap: 8 }}>
-          <Btn label="Cancel" variant="ghost" onPress={onClose} />
-          <Btn label="Continue" onPress={() => onResult(text)} disabled={!text.trim()} />
+          <Btn label="Cancel" variant="ghost" onPress={onClose} disabled={extracting} />
+          <Btn
+            label={extracting ? 'Understanding…' : 'Continue'}
+            icon={extracting ? <ActivityIndicator size="small" color={c.onDark} /> : undefined}
+            onPress={continueWithAI}
+            disabled={!text.trim() || extracting}
+          />
         </View>
       }>
       <View style={{ gap: 16 }}>
         <View style={{ alignItems: 'center', gap: 10 }}>
           <Pressable
             onPress={listening ? stop : start}
-            disabled={!supported}
+            disabled={!supported || extracting}
             style={({ pressed }) => ({
               width: 76, height: 76, borderRadius: r.full,
               alignItems: 'center', justifyContent: 'center',
@@ -107,7 +115,7 @@ function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose
           <TextInput
             value={listening && interim ? `${text} ${interim}`.trim() : text}
             onChangeText={setText}
-            editable={!listening}
+            editable={!listening && !extracting}
             multiline
             placeholder="e.g. I met Sarah Miller at the SaaStr conference, she's a product designer at Figma"
             placeholderTextColor={c.textMuted}
@@ -117,20 +125,10 @@ function SpeakSheet({ events, onClose, onResult }: { events: CrmEvent[]; onClose
               minHeight: 96, textAlignVertical: 'top', fontFamily: font.regular,
             }}
           />
+          <Text style={{ fontSize: 11, color: c.textSecondary, fontFamily: font.regular, marginTop: 6 }}>
+            Check the text, then continue. The AI fills in the contact form from it; you can fix anything there.
+          </Text>
         </View>
-
-        {found.length ? (
-          <View style={{ backgroundColor: c.accentSoft, borderRadius: r.lg, padding: 14, gap: 8 }}>
-            <Text style={{ fontSize: 12, fontFamily: font.medium, color: c.accentDeep }}>I picked up</Text>
-            {found.map((f) => (
-              <View key={f.label} style={{ flexDirection: 'row', gap: 8 }}>
-                <Text style={{ fontSize: 13, color: c.textSecondary, fontFamily: font.regular, width: 74 }}>{f.label}</Text>
-                <Text style={{ fontSize: 13, color: c.text, fontFamily: font.medium, flex: 1 }}>{f.value}</Text>
-              </View>
-            ))}
-            <Text style={{ fontSize: 11, color: c.textSecondary, fontFamily: font.regular }}>You can fix anything on the next screen.</Text>
-          </View>
-        ) : null}
 
         {error ? (
           <Text style={{ fontSize: 11, color: c.danger, backgroundColor: c.dangerSoft, padding: 8, borderRadius: r.md, fontFamily: font.regular }}>{error}</Text>

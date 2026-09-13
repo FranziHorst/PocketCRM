@@ -41,6 +41,8 @@ type RequestOptions = {
   functions?: GeminiFunctionDeclaration[];
   webSearch?: boolean;
   temperature?: number;
+  // Wenn gesetzt, antwortet das Modell mit JSON in genau dieser Struktur.
+  responseSchema?: Record<string, unknown>;
 };
 
 export class GeminiError extends Error {}
@@ -60,7 +62,10 @@ async function call(opts: RequestOptions): Promise<GeminiResult> {
       contents: opts.contents,
       ...(opts.systemInstruction ? { systemInstruction: { parts: [{ text: opts.systemInstruction }] } } : {}),
       ...(tools.length ? { tools } : {}),
-      generationConfig: { temperature: opts.temperature ?? 0.7 },
+      generationConfig: {
+        temperature: opts.temperature ?? 0.7,
+        ...(opts.responseSchema ? { responseMimeType: 'application/json', responseSchema: opts.responseSchema } : {}),
+      },
     }),
   });
 

@@ -1,6 +1,7 @@
 import { Contact, CrmEvent, TagSuggestion } from '../types';
 import { getReminderInfo } from '../crmHelpers';
 import { AssistantCtx, AssistantReply, GeminiError, geminiConfigured, runAssistant } from './assistant';
+import { generate } from './gemini';
 
 export type { AssistantAction, AssistantCtx, AssistantReply } from './assistant';
 export { geminiConfigured } from './assistant';
@@ -107,8 +108,8 @@ export function iceBreakersFor(contact: Contact, events: CrmEvent[], seed = 0): 
 
 function withArticle(role: string) { return /^[aeiou]/i.test(role) ? `an ${role}` : `a ${role}`; }
 
-// TODO(KI): Platzhalter. Zieht die Kontaktfelder per Muster aus dem gesprochenen Text.
-// Später ersetzt die echte KI nur diese Funktion; die Signatur kann bleiben.
+// Regelbasierte Feldzuordnung. Seit der Gemini-Anbindung nur noch der Fallback von
+// extractContactWithAI (kein Netz, Proxy nicht erreichbar, kaputtes JSON).
 export type ExtractedContact = {
   name: string; role: string; company: string; howWeMet: string; notes: string;
   // eventId: passendes bestehendes Event gefunden. newEventName: kein Match, aber ein
@@ -116,6 +117,8 @@ export type ExtractedContact = {
   // selbst veraendert keinen State).
   eventId?: string;
   newEventName?: string;
+  // Nur die KI-Variante fuellt das (Wohn-/Arbeitsort der Person, falls genannt).
+  location?: string;
 };
 
 const ROLES = [
@@ -256,4 +259,91 @@ export function extractContact(text: string, events: CrmEvent[] = []): Extracted
 export function findContactInText(text: string, contacts: Contact[]): Contact | undefined {
   const q = text.toLowerCase();
   return contacts.find((ct) => q.includes(ct.name.toLowerCase()) || q.includes(ct.name.split(' ')[0].toLowerCase()));
+}
+
+
+// ---------------------------------------------------------------------------
+// Echte Feldzuordnung per Gemini (ueber den Netlify-Proxy). Versteht jede Sprache
+// und freie Formulierungen; die Regel-Variante oben bleibt als Fallback.
+// ---------------------------------------------------------------------------
+
+const EXTRACT_SCHEMA = {
+  type: 'object',
+  properties: {
+    name: { type: 'string' },
+    role: { type: 'string' },
+    company: { type: 'string' },
+    eventName: { type: 'string' },
+    howWeMet: { type: 'string' },
+    notes: { type: 'string' },
+    location: { type: 'string' },
+  },
+  required: ['name', 'role', 'company', 'eventName', 'howWeMet', 'notes', 'location'],
+};
+
+const EXTRACT_INSTRUCTION = `You turn a spoken voice note about someone the user just met into contact fields for a personal CRM.
+The note may be in any language. Keep names, roles, companies and event names as spoken - do not translate them.
+Fill only what the note actually says; never invent. Use an empty string for anything unknown.
+- name: the person's full name.
+- role: their job title or role.
+- company: their company or organization (never the event or the venue).
+- eventName: the event, meetup, conference or occasion where they met, if one is mentioned. If it clearly refers to one of the known events, return that known event's name exactly as listed.
+- howWeMet: one short phrase on how or where they met, in the language of the note.
+- location: the city or place the person is based in, if mentioned (not where you met).
+- notes: a short summary (1-3 sentences, in the language of the note) of everything else worth remembering: interests, follow-ups, context. Do not repeat name, role or company. Never return the transcript verbatim.`;
+
+function normalizeEventName(value: string): string {
+  return value.toLowerCase().replace(/[^\p{L}\p{N}]+/gu, ' ').trim();
+}
+
+// Bestehendes Event zu einem genannten Namen finden: erst exakt, dann "enthaelt".
+export function matchEvent(name: string, events: CrmEvent[]): CrmEvent | undefined {
+  const n = normalizeEventName(name);
+  if (!n) return undefined;
+  return (
+    events.find((e) => normalizeEventName(e.name) === n) ??
+    events.find((e) => {
+      const m = normalizeEventName(e.name);
+      return m.length > 3 && (n.includes(m) || m.includes(n));
+    })
+  );
+}
+
+export type ExtractionResult = ExtractedContact & { source: 'ai' | 'rules' };
+
+export async function extractContactWithAI(text: string, events: CrmEvent[] = []): Promise<ExtractionResult> {
+  const transcript = text.trim().replace(/\s+/g, ' ');
+  if (!transcript) return { ...extractContact(transcript, events), source: 'rules' };
+
+  try {
+    const known = events.map((e) => e.name).filter(Boolean);
+    const result = await generate({
+      systemInstruction: EXTRACT_INSTRUCTION,
+      contents: [{
+        role: 'user',
+        parts: [{ text: `Known events:\n${known.length ? known.map((k) => `- ${k}`).join('\n') : '(none)'}\n\nVoice note:\n${transcript}` }],
+      }],
+      responseSchema: EXTRACT_SCHEMA,
+      temperature: 0.2,
+    });
+
+    const data = JSON.parse(result.text) as Record<string, unknown>;
+    const str = (key: string) => (typeof data[key] === 'string' ? (data[key] as string).trim() : '');
+    const eventName = str('eventName');
+    const existing = eventName ? matchEvent(eventName, events) : undefined;
+
+    return {
+      name: str('name'),
+      role: str('role'),
+      company: str('company'),
+      howWeMet: str('howWeMet') || (existing?.name ?? eventName),
+      notes: str('notes') || summarizeNotes(transcript, 220),
+      location: str('location') || undefined,
+      eventId: existing?.id,
+      newEventName: !existing && eventName ? eventName : undefined,
+      source: 'ai',
+    };
+  } catch {
+    return { ...extractContact(transcript, events), source: 'rules' };
+  }
 }

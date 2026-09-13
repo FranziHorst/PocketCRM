@@ -1,6 +1,6 @@
-import React from 'react';
+import React, { useEffect, useRef } from 'react';
 import {
-  Alert, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView,
+  Alert, Animated, Easing, Image, KeyboardAvoidingView, Linking, Modal, Platform, Pressable, ScrollView,
   StyleSheet, Text, TextInput, TextInputProps, View, ViewStyle,
 } from 'react-native';
 import { Check, ChevronDown, ChevronUp, X } from 'lucide-react-native';
@@ -166,29 +166,53 @@ export function confirmAsync(title: string, message?: string): Promise<boolean> 
 }
 
 export const ModalShell = ({ visible, onClose, title, subtitle, icon, children, footer, sheet }:
-  { visible: boolean; onClose: () => void; title: string; subtitle?: string; icon?: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode; sheet?: boolean }) => (
-  <Modal visible={visible} transparent animationType="slide" onRequestClose={onClose}>
-    <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[s.overlay, sheet ? { justifyContent: 'flex-end' } : { justifyContent: 'center', padding: 16 }]}>
-      <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
-      <View style={[s.modal, sheet && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, maxHeight: '92%' }]}>
-        <View style={s.modalHeader}>
-          <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
-            {icon}
-            <View style={{ flex: 1 }}>
-              <Text style={{ fontSize: 14, fontFamily: font.display, color: c.text }}>{title}</Text>
-              {subtitle ? <Text style={{ fontSize: 11, color: c.textSecondary , fontFamily: font.regular}}>{subtitle}</Text> : null}
+  { visible: boolean; onClose: () => void; title: string; subtitle?: string; icon?: React.ReactNode; children: React.ReactNode; footer?: React.ReactNode; sheet?: boolean }) => {
+  // Eigene Einblend-Animation statt animationType="slide": dort rutscht der ganze
+  // Dialog samt dunklem Hintergrund von unten hoch. Hier blendet der Hintergrund
+  // weich ein und die Karte faehrt nur ein Stueck hoch.
+  const progress = useRef(new Animated.Value(0)).current;
+  useEffect(() => {
+    if (!visible) return;
+    progress.setValue(0);
+    Animated.timing(progress, {
+      toValue: 1,
+      duration: 260,
+      easing: Easing.out(Easing.cubic),
+      useNativeDriver: Platform.OS !== 'web',
+    }).start();
+  }, [visible, progress]);
+
+  const backdropStyle = { opacity: progress };
+  const cardStyle = {
+    opacity: progress,
+    transform: [{ translateY: progress.interpolate({ inputRange: [0, 1], outputRange: [sheet ? 40 : 18, 0] }) }],
+  };
+
+  return (
+    <Modal visible={visible} transparent animationType="none" onRequestClose={onClose}>
+      <Animated.View style={[StyleSheet.absoluteFill, s.overlay, backdropStyle]} />
+      <KeyboardAvoidingView behavior={Platform.OS === 'ios' ? 'padding' : undefined} style={[{ flex: 1 }, sheet ? { justifyContent: 'flex-end' } : { justifyContent: 'center', padding: 16 }]}>
+        <Pressable style={StyleSheet.absoluteFill} onPress={onClose} />
+        <Animated.View style={[s.modal, sheet && { borderBottomLeftRadius: 0, borderBottomRightRadius: 0, maxHeight: '92%' }, cardStyle]}>
+          <View style={s.modalHeader}>
+            <View style={{ flexDirection: 'row', alignItems: 'center', gap: 10, flex: 1 }}>
+              {icon}
+              <View style={{ flex: 1 }}>
+                <Text style={{ fontSize: 14, fontFamily: font.display, color: c.text }}>{title}</Text>
+                {subtitle ? <Text style={{ fontSize: 11, color: c.textSecondary , fontFamily: font.regular}}>{subtitle}</Text> : null}
+              </View>
             </View>
+            <Pressable onPress={onClose} hitSlop={8} style={{ padding: 4 }}>
+              <X size={20} color={c.textMuted} />
+            </Pressable>
           </View>
-          <Pressable onPress={onClose} hitSlop={8} style={{ padding: 4 }}>
-            <X size={20} color={c.textMuted} />
-          </Pressable>
-        </View>
-        <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>{children}</ScrollView>
-        {footer ? <View style={s.modalFooter}>{footer}</View> : null}
-      </View>
-    </KeyboardAvoidingView>
-  </Modal>
-);
+          <ScrollView keyboardShouldPersistTaps="handled" contentContainerStyle={{ padding: 20 }}>{children}</ScrollView>
+          {footer ? <View style={s.modalFooter}>{footer}</View> : null}
+        </Animated.View>
+      </KeyboardAvoidingView>
+    </Modal>
+  );
+};
 
 const s = StyleSheet.create({
   card: { backgroundColor: c.surface, borderRadius: r.xxl, padding: 16, borderWidth: 1, borderColor: c.line },

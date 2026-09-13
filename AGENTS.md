@@ -38,7 +38,7 @@ Baut ein Feature auf einem Branch auf, der noch nicht in `main` ist, dann:
 
 **Speak to AI – wo der Code hingehört**
 - Neu: `src/components/SpeakToAIModal.tsx` (Dialog mit Aufnahme, Live-Text, Weiter-Button)
-- Neu: `src/speech.ts` (Spracherkennung) und die Feldzuordnung in `src/ai.ts` (`extractContact(text)` – dort ist die KI-Anbindung als TODO markiert)
+- Neu: `src/speech.ts` (Spracherkennung, Web Speech API im Browser) und die Feldzuordnung in `src/ai.ts`: `extractContactWithAI(text, events)` schickt das Transkript per Gemini-Proxy an das Modell (JSON-Schema, jede Sprache, matcht bekannte Events); `extractContact` ist nur noch der regelbasierte Fallback ohne Netz
 - `src/store.tsx`: nur `isSpeakOpen` / `setSpeakOpen` ergänzen (wie `isScanOpen`)
 - `src/components/Modals.tsx`: nur die eine Zeile `<SpeakToAIModal />`
 - `src/components/AddContactCard.tsx`: nur den `onPress` des Buttons auf `setSpeakOpen(true)` umstellen
