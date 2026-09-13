@@ -1,18 +1,28 @@
-import { Contact, CrmEvent, DailyTask, TagSuggestion, UserProfile } from '../types';
+import { Contact, CrmEvent, TagSuggestion } from '../types';
 import { getReminderInfo } from '../crmHelpers';
+import { AssistantCtx, AssistantReply, GeminiError, geminiConfigured, runAssistant } from './assistant';
 
-// ---------------------------------------------------------------------------
-// TODO(KI): Platzhalter. Hier später echte KI anschließen.
-// Die Web-App hat dafür einen kleinen Server (pocket-crm/server.ts) mit den
-// Endpunkten /api/gemini/chat und /api/gemini/suggest-tags genutzt.
-// Die Funktionssignaturen hier können dabei gleich bleiben.
-// ---------------------------------------------------------------------------
-
-type Ctx = { userProfile: UserProfile; contacts: Contact[]; tasks: DailyTask[] };
+export type { AssistantAction, AssistantCtx, AssistantReply } from './assistant';
+export { geminiConfigured } from './assistant';
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
-export async function askAssistant(message: string, ctx: Ctx): Promise<string> {
+export async function askAssistant(
+  message: string,
+  ctx: AssistantCtx,
+  history: { sender: 'user' | 'assistant'; text: string }[] = []
+): Promise<AssistantReply> {
+  if (!geminiConfigured()) return { text: await demoReply(message, ctx) };
+  try {
+    return await runAssistant(message, ctx, history);
+  } catch (err) {
+    const detail = err instanceof GeminiError ? err.message : 'Check your connection and try again.';
+    return { text: `I couldn't reach the AI service.\n\n${detail}` };
+  }
+}
+
+// Kept so the app still answers without an API key: same shapes, canned text.
+async function demoReply(message: string, ctx: AssistantCtx): Promise<string> {
   await wait(700);
   const q = message.toLowerCase();
 

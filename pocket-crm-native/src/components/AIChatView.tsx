@@ -1,32 +1,47 @@
 import React, { useEffect, useRef, useState } from 'react';
 import { ActivityIndicator, KeyboardAvoidingView, Platform, Pressable, ScrollView, Text, TextInput, View } from 'react-native';
 import * as Clipboard from 'expo-clipboard';
-import { ArrowUp, Check, Copy, RefreshCw } from 'lucide-react-native';
+import * as Linking from 'expo-linking';
+import { ArrowUp, Check, Copy, Globe, RefreshCw, Sparkles } from 'lucide-react-native';
 import { useCrm } from '../store';
 import { ChatMessage, Contact } from '../../types';
-import { askAssistant, findContactInText, iceBreakersFor } from '../ai';
+import { AssistantAction, askAssistant, findContactInText, geminiConfigured, iceBreakersFor } from '../ai';
+import { WebSource } from '../gemini';
 import { c, r, t, font } from '../theme';
 import { Avatar, PageTitle, TextBtn } from './ui';
+
+type Msg = ChatMessage & {
+  action?: AssistantAction;
+  actionState?: 'pending' | 'applied' | 'dismissed';
+  sources?: WebSource[];
+};
 
 const ICE_BREAKER_PROMPT = 'Ice breaker for a contact';
 const SAMPLE_PROMPTS = [
   ICE_BREAKER_PROMPT,
-  'Draft a coffee follow-up for Maya Lin',
   'Who in my network is overdue for a check-in?',
+  "What's new at Maya Lin's company?",
+  'Remind me to follow up with Maya Lin on Friday',
   'Prep 3 smart questions for an angel investor',
 ];
 
 const wait = (ms: number) => new Promise((res) => setTimeout(res, ms));
 
 export function AIChatView() {
-  const { userProfile, contacts, tasks, events, chatPrefilledPrompt, clearPrefilledPrompt, iceBreakerContactId, clearIceBreakerRequest } = useCrm();
-  const welcome = (): ChatMessage => ({
+  const {
+    userProfile, contacts, tasks, events, saveContact, addTask, toggleTask,
+    chatPrefilledPrompt, clearPrefilledPrompt, iceBreakerContactId, clearIceBreakerRequest,
+  } = useCrm();
+  const live = geminiConfigured();
+  const welcome = (): Msg => ({
     id: 'm_welcome',
     sender: 'assistant',
-    text: `Hi ${userProfile.name.split(' ')[0]}. I know your ${contacts.length} contacts and your open tasks. Ask me for an opener before a meeting, a follow-up draft, or who you haven't spoken to in a while.`,
+    text: live
+      ? `Hi ${userProfile.name.split(' ')[0]}. I know your ${contacts.length} contacts and your open tasks, I can search the web, and I can add tasks or update a contact for you — you confirm before anything is saved.`
+      : `Hi ${userProfile.name.split(' ')[0]}. I know your ${contacts.length} contacts and your open tasks. Ask me for an opener before a meeting, a follow-up draft, or who you haven't spoken to in a while.`,
     timestamp: '',
   });
-  const [messages, setMessages] = useState<ChatMessage[]>([welcome()]);
+  const [messages, setMessages] = useState<Msg[]>([welcome()]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -46,12 +61,20 @@ export function AIChatView() {
   const runIceBreaker = async (contact: Contact, seed = 0) => {
     if (seed === 0) pushUser(`Ice breaker for ${contact.name}`);
     setLoading(true);
-    await wait(600);
-    const lines = iceBreakersFor(contact, events, seed);
+    let text: string;
+    if (live) {
+      const reply = await askAssistant(
+        `Give me three openers to start a conversation with ${contact.name}. Look them up first and build each one on something specific you find. Just the three lines${seed > 0 ? ', different from the usual ones' : ''}.`,
+        { userProfile, contacts, tasks, events }
+      );
+      text = reply.text;
+    } else {
+      await wait(600);
+      const lines = iceBreakersFor(contact, events, seed);
+      text = `Openers for ${contact.name.split(' ')[0]}:\n\n${lines.map((l) => `• ${l}`).join('\n\n')}\n\n(Demo reply, real AI not connected yet.)`;
+    }
     setMessages((m) => [...m, {
-      id: `ice_${Date.now()}`, sender: 'assistant', kind: 'iceBreakers', contactId: contact.id, seed,
-      text: `Openers for ${contact.name.split(' ')[0]}:\n\n${lines.map((l) => `• ${l}`).join('\n\n')}\n\n(Demo reply, real AI not connected yet.)`,
-      timestamp: '',
+      id: `ice_${Date.now()}`, sender: 'assistant', kind: 'iceBreakers', contactId: contact.id, seed, text, timestamp: '',
     }]);
     setLoading(false);
   };
@@ -72,16 +95,33 @@ export function AIChatView() {
       if (ct) { await runIceBreaker(ct); return; }
       if (text === ICE_BREAKER_PROMPT || !/mixer|event|meetup/i.test(text)) { pushUser(text); askWhichContact(); return; }
     }
+    const history = messages.filter((m) => m.id !== 'm_welcome').map((m) => ({ sender: m.sender, text: m.text }));
     pushUser(text);
     setLoading(true);
     try {
-      const reply = await askAssistant(text, { userProfile, contacts, tasks });
-      setMessages((m) => [...m, { id: `ast_${Date.now()}`, sender: 'assistant', text: reply, timestamp: '' }]);
+      const reply = await askAssistant(text, { userProfile, contacts, tasks, events }, history);
+      setMessages((m) => [...m, {
+        id: `ast_${Date.now()}`, sender: 'assistant', text: reply.text, timestamp: '',
+        ...(reply.action ? { action: reply.action, actionState: 'pending' as const } : {}),
+        ...(reply.sources?.length ? { sources: reply.sources } : {}),
+      }]);
     } catch {
       setMessages((m) => [...m, { id: `err_${Date.now()}`, sender: 'assistant', text: "Sorry, I couldn't reach the AI service.", timestamp: '' }]);
     } finally {
       setLoading(false);
     }
+  };
+
+  const resolveAction = (msgId: string, apply: boolean) => {
+    const msg = messages.find((m) => m.id === msgId);
+    if (!msg?.action || msg.actionState !== 'pending') return;
+    if (apply) {
+      const a = msg.action;
+      if (a.kind === 'saveContact') saveContact(a.contact);
+      else if (a.kind === 'addTask') addTask(a.task);
+      else toggleTask(a.taskId);
+    }
+    setMessages((m) => m.map((x) => (x.id === msgId ? { ...x, actionState: apply ? 'applied' : 'dismissed' } : x)));
   };
 
   const copy = async (text: string, id: string) => {
@@ -106,6 +146,10 @@ export function AIChatView() {
               <View style={{ maxWidth: '86%', borderRadius: r.xxl, borderBottomRightRadius: me ? 6 : r.xxl, borderBottomLeftRadius: me ? r.xxl : 6, paddingHorizontal: 16, paddingVertical: 12, backgroundColor: me ? c.text : c.surface, gap: 8 }}>
                 <Text style={{ fontSize: 15, lineHeight: 21, fontFamily: font.regular, color: me ? c.onDark : c.text }}>{msg.text}</Text>
                 {msg.kind === 'pickContact' && <ContactPicker contacts={contacts} onPick={(ct) => runIceBreaker(ct)} disabled={loading} />}
+                {msg.action ? (
+                  <ActionCard action={msg.action} state={msg.actionState ?? 'pending'} onResolve={(apply) => resolveAction(msg.id, apply)} />
+                ) : null}
+                {msg.sources?.length ? <Sources sources={msg.sources} /> : null}
                 {!me && msg.id !== 'm_welcome' && (
                   <View style={{ flexDirection: 'row', alignItems: 'center', gap: 16, paddingTop: 8, borderTopWidth: 1, borderTopColor: c.line }}>
                     {msg.kind === 'iceBreakers' && msg.contactId ? (
@@ -147,6 +191,48 @@ export function AIChatView() {
         </Pressable>
       </View>
     </KeyboardAvoidingView>
+  );
+}
+
+function ActionCard({ action, state, onResolve }: { action: AssistantAction; state: 'pending' | 'applied' | 'dismissed'; onResolve: (apply: boolean) => void }) {
+  if (state !== 'pending') {
+    return (
+      <View style={{ flexDirection: 'row', alignItems: 'center', gap: 6, marginTop: 4 }}>
+        <Check size={13} color={state === 'applied' ? c.accentDark : c.textMuted} />
+        <Text style={{ fontSize: 13, fontFamily: font.medium, color: state === 'applied' ? c.accentDark : c.textMuted }}>
+          {state === 'applied' ? 'Saved' : 'Not saved'}
+        </Text>
+      </View>
+    );
+  }
+  return (
+    <View style={{ marginTop: 4, borderRadius: r.lg, borderWidth: 1, borderColor: c.line, backgroundColor: c.surfaceSoft, padding: 12, gap: 10 }}>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Sparkles size={15} color={c.accentDark} />
+        <Text style={{ flex: 1, fontSize: 14, lineHeight: 19, fontFamily: font.medium, color: c.text }}>{action.label}</Text>
+      </View>
+      <View style={{ flexDirection: 'row', gap: 8 }}>
+        <Pressable onPress={() => onResolve(true)} style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 8, borderRadius: r.full, backgroundColor: c.text, opacity: pressed ? 0.85 : 1 })}>
+          <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.onDark }}>Save</Text>
+        </Pressable>
+        <Pressable onPress={() => onResolve(false)} style={({ pressed }) => ({ paddingHorizontal: 16, paddingVertical: 8, borderRadius: r.full, borderWidth: 1, borderColor: c.line, backgroundColor: pressed ? c.line : 'transparent' })}>
+          <Text style={{ fontSize: 13, fontFamily: font.medium, color: c.text2 }}>Discard</Text>
+        </Pressable>
+      </View>
+    </View>
+  );
+}
+
+function Sources({ sources }: { sources: WebSource[] }) {
+  return (
+    <View style={{ marginTop: 4, gap: 6 }}>
+      {sources.slice(0, 4).map((s) => (
+        <Pressable key={s.uri} onPress={() => Linking.openURL(s.uri).catch(() => {})} style={{ flexDirection: 'row', alignItems: 'center', gap: 6 }}>
+          <Globe size={12} color={c.textSecondary} />
+          <Text numberOfLines={1} style={{ flex: 1, fontSize: 12, fontFamily: font.regular, color: c.textSecondary, textDecorationLine: 'underline' }}>{s.title}</Text>
+        </Pressable>
+      ))}
+    </View>
   );
 }
 

@@ -35,6 +35,21 @@ npm run reset-project
 
 This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
 
+## Assistant (KI)
+
+Der Assistent läuft ohne Schlüssel im Demo-Modus (feste Antworten). Für echte KI:
+
+1. `cp .env.example .env`
+2. Schlüssel von https://aistudio.google.com/apikey in `EXPO_PUBLIC_GEMINI_API_KEY` eintragen
+3. Dev-Server neu starten (`npx expo start -c`) – `EXPO_PUBLIC_*` wird beim Bundeln eingesetzt
+
+Dann kann der Assistent Kontakte und Aufgaben lesen, im Web suchen und Änderungen
+vorschlagen (Kontakt aktualisieren, Aufgabe anlegen, Aufgabe abhaken). Gespeichert
+wird erst, wenn man im Chat auf **Save** tippt.
+
+`.env` steht in `.gitignore`. Achtung: `EXPO_PUBLIC_*` landet im App-Bundle und ist
+damit auslesbar – für ein Release gehören die Aufrufe hinter einen eigenen Server.
+
 ### Other setup steps
 
 - To set up ESLint for linting, run `npx expo lint`, or follow our guide on ["Using ESLint and Prettier"](https://docs.expo.dev/guides/using-eslint/)
